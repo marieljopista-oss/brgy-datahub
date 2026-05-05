@@ -1,0 +1,738 @@
+{% load static %}
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+  <title>Barangay DataHub — Residents</title> 
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head> 
+
+<body> 
+
+ 
+
+  <!-- Top navigation bar --> 
+
+  <div class="topbar"> 
+
+    <div class="topbar-left"> 
+
+      <a href="{% url 'home' %}" class="btn-back">&#8592;</a> 
+
+      <span class="topbar-badge">RESIDENTS</span> 
+
+    </div> 
+
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
+
+  </div> 
+
+ 
+
+  <!-- Page title --> 
+
+  <div class="page-header"> 
+
+    <h1>Residents</h1> 
+
+    <p>Manage resident information and records</p> 
+
+  </div> 
+
+ 
+
+  <div class="page-content"> 
+
+    <div class="card"> 
+      <!-- Card header --> 
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;"> 
+        <div> 
+          <div class="card-title">Resident List</div> 
+          <div style="font-size:12px; color:#7a9aaa; margin-top:2px;">Total residents: <strong>0</strong></div> 
+        </div> 
+
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;"> 
+
+          <div class="search-bar"> 
+
+            <span style="color:#a0b8c4; font-size:15px;">&#128269;</span> 
+
+            <input type="text" placeholder="Search residents..." /> 
+
+          </div> 
+
+          <button class="btn btn-primary" onclick="openModal('addModal')">&#43; Add Resident</button> 
+
+        </div> 
+
+      </div> 
+
+ 
+
+      <!-- Empty state — no residents yet --> 
+
+      <div class="empty-state" style="padding: 60px 20px;"> 
+
+        <div class="empty-icon">&#128101;</div> 
+
+        <p style="font-size:15px; font-weight:600; color:#4a6a7a; margin-bottom:6px;">No residents added yet</p> 
+
+        <p style="font-size:13px;">Click <strong>+ Add Resident</strong> to start building the resident list.</p> 
+
+      </div> 
+      <!-- Table (shown once data exists) — hidden by default --> 
+      <table class="data-table" id="residentTable" style="display:none;"> 
+        <thead> 
+          <tr> 
+            <th>Name</th> 
+            <th>Age</th> 
+            <th>Gender</th> 
+            <th>Household</th> 
+            <th>Livelihood</th> 
+            <th>Disability</th> 
+            <th style="text-align:right;">Actions</th> 
+          </tr> 
+        </thead> 
+        <tbody id="residentBody"> 
+              {% for resident in residents %}
+            <tr>
+                <td>{{ resident.first_name }}</td>
+                <td>{{ resident.last_name }}</td>
+                <td>{{ resident.gender }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No residents found in the database.</td>
+            </tr>
+            {% endfor %}
+        </tbody> 
+      </table> 
+    </div> 
+
+  </div> 
+
+ 
+
+ 
+
+  <!-- ============================================= 
+
+       ADD RESIDENT MODAL 
+
+       ============================================= --> 
+
+  <div class="modal-overlay" id="addModal"> 
+    <div class="modal-box"> 
+
+      <div class="modal-header"> 
+        <div> 
+          <h2>Add New Resident</h2> 
+          <p>Enter the resident's information below.</p> 
+        </div> 
+        <button class="modal-close" onclick="closeModal('addModal')">&#10005;</button> 
+      </div> 
+
+ 
+
+      <div class="form-row"> 
+
+        <label>Name</label> 
+
+        <div class="form-field"><input type="text" id="add-name" placeholder="Full name" /></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Birth Date</label> 
+
+        <div class="form-field"><input type="date" id="add-bdate" /></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Gender</label> 
+
+        <div class="form-field"> 
+
+          <select id="add-gender"> 
+
+            <option>Male</option> 
+
+            <option>Female</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Household<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select id="add-household"> 
+
+            <option value="">None</option> 
+
+            <option>HH-001</option><option>HH-002</option> 
+
+            <option>HH-003</option><option>HH-004</option><option>HH-005</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Livelihood<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select id="add-livelihood"> 
+
+            <option value="">None</option> 
+
+            <option>Farming</option><option>Teaching</option><option>Student</option> 
+
+            <option>Construction</option><option>Small Business</option> 
+
+            <option>Retail</option><option>Healthcare</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>House Material<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>Concrete</option><option>Wood</option><option>Mixed</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>House Ownership<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>Owned</option><option>Rented</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Disability</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" id="add-disability" /> Has disability</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>LGBTQ Type<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>Gay</option><option>Lesbian</option> 
+
+            <option>Bisexual</option><option>Transgender</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Labor Force</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Is in labor force</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Unemployed</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Is unemployed</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>OFW</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Is OFW</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Solo Parent</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Is solo parent</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Indigenous</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Is indigenous</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Civil Status<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>Single</option><option>Married</option><option>Widowed</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Citizenship<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option>Filipino</option><option>Foreigner</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+ 
+
+      <div class="modal-footer"> 
+
+        <button class="btn btn-outline" onclick="closeModal('addModal')">Cancel</button> 
+
+        <button class="btn btn-primary" onclick="addResident()">Add Resident</button> 
+
+      </div> 
+
+ 
+
+    </div> 
+
+  </div> 
+
+ 
+
+ 
+
+  <!-- ============================================= 
+
+       EDIT RESIDENT MODAL 
+
+       ============================================= --> 
+
+  <div class="modal-overlay" id="editModal"> 
+
+    <div class="modal-box"> 
+
+ 
+
+      <div class="modal-header"> 
+
+        <div> 
+
+          <h2>Edit Resident</h2> 
+
+          <p>Update the resident's information below.</p> 
+
+        </div> 
+
+        <button class="modal-close" onclick="closeModal('editModal')">&#10005;</button> 
+
+      </div> 
+
+ 
+
+      <div class="form-row"> 
+
+        <label>Name</label> 
+
+        <div class="form-field"><input type="text" placeholder="Full name" /></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Birth Date</label> 
+
+        <div class="form-field"><input type="date" /></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Gender</label> 
+
+        <div class="form-field"> 
+
+          <select><option>Male</option><option>Female</option></select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Household<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>HH-001</option><option>HH-002</option> 
+
+            <option>HH-003</option><option>HH-004</option><option>HH-005</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Livelihood<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select> 
+
+            <option value="">None</option> 
+
+            <option>Farming</option><option>Teaching</option><option>Student</option> 
+
+            <option>Construction</option><option>Small Business</option> 
+
+          </select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>House Material<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select><option value="">None</option><option>Concrete</option><option>Wood</option><option>Mixed</option></select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>House Ownership<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select><option value="">None</option><option>Owned</option><option>Rented</option></select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Disability</label> 
+
+        <div class="form-field"> 
+
+          <label class="check-row"><input type="checkbox" /> Has disability</label> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>LGBTQ Type<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select><option value="">None</option><option>Gay</option><option>Lesbian</option><option>Bisexual</option><option>Transgender</option></select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Labor Force</label> 
+
+        <div class="form-field"><label class="check-row"><input type="checkbox" /> Is in labor force</label></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Unemployed</label> 
+
+        <div class="form-field"><label class="check-row"><input type="checkbox" /> Is unemployed</label></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>OFW</label> 
+
+        <div class="form-field"><label class="check-row"><input type="checkbox" /> Is OFW</label></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Solo Parent</label> 
+
+        <div class="form-field"><label class="check-row"><input type="checkbox" /> Is solo parent</label></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Indigenous</label> 
+
+        <div class="form-field"><label class="check-row"><input type="checkbox" /> Is indigenous</label></div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Civil Status<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select><option value="">None</option><option>Single</option><option>Married</option><option>Widowed</option></select> 
+
+        </div> 
+
+      </div> 
+
+      <div class="form-row"> 
+
+        <label>Citizenship<span class="optional">(Optional)</span></label> 
+
+        <div class="form-field"> 
+
+          <select><option>Filipino</option><option>Foreigner</option></select> 
+
+        </div> 
+
+      </div> 
+
+ 
+
+      <div class="modal-footer"> 
+
+        <button class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button> 
+
+        <button class="btn btn-primary">Update Resident</button> 
+
+      </div> 
+
+ 
+
+    </div> 
+
+  </div> 
+
+ 
+
+ 
+
+  <script> 
+
+    /* Open / close modal */ 
+
+    function openModal(id) { 
+
+      document.getElementById(id).classList.add('open'); 
+
+    } 
+
+    function closeModal(id) { 
+
+      document.getElementById(id).classList.remove('open'); 
+
+    } 
+
+    /* Close modal when clicking the dark overlay */ 
+
+    document.querySelectorAll('.modal-overlay').forEach(function(el) { 
+
+      el.addEventListener('click', function(e) { 
+
+        if (e.target === el) el.classList.remove('open'); 
+
+      }); 
+
+    }); 
+
+ 
+
+    /* Simple add-resident to table demo */ 
+
+    function addResident() { 
+
+      var name       = document.getElementById('add-name').value.trim(); 
+
+      var bdate      = document.getElementById('add-bdate').value; 
+
+      var gender     = document.getElementById('add-gender').value; 
+
+      var household  = document.getElementById('add-household').value || 'N/A'; 
+
+      var livelihood = document.getElementById('add-livelihood').value || 'N/A'; 
+
+      var disability = document.getElementById('add-disability').checked ? 'Yes' : 'No'; 
+
+ 
+
+      if (!name) { alert('Please enter the resident\'s name.'); return; } 
+
+ 
+
+      /* Calculate age from birth date */ 
+
+      var age = '—'; 
+
+      if (bdate) { 
+
+        var today = new Date(); 
+
+        var birth = new Date(bdate); 
+
+        age = Math.floor((today - birth) / (365.25 * 24 * 60 * 60 * 1000)); 
+
+      } 
+
+ 
+
+      /* Show the table (hide empty state) */ 
+
+      document.querySelector('.empty-state').style.display = 'none'; 
+
+      document.getElementById('residentTable').style.display = 'table'; 
+
+ 
+
+      /* Add a new row */ 
+
+      var row = document.createElement('tr'); 
+
+      row.innerHTML = 
+
+        '<td>' + name + '</td>' + 
+
+        '<td>' + age + '</td>' + 
+
+        '<td>' + gender + '</td>' + 
+
+        '<td class="' + (household === 'N/A' ? 'text-muted' : '') + '">' + household + '</td>' + 
+
+        '<td class="' + (livelihood === 'N/A' ? 'text-muted' : '') + '">' + livelihood + '</td>' + 
+
+        '<td>' + disability + '</td>' + 
+
+        '<td><div class="action-icons">' + 
+
+          '<button class="icon-btn icon-edit" onclick="openModal(\'editModal\')">&#9998;</button>' + 
+
+          '<button class="icon-btn icon-delete" onclick="this.closest(\'tr\').remove()">&#128465;</button>' + 
+
+        '</div></td>'; 
+
+      document.getElementById('residentBody').appendChild(row); 
+
+ 
+
+      closeModal('addModal'); 
+
+    } 
+
+  </script> 
+
+</body> 
+
+</html>

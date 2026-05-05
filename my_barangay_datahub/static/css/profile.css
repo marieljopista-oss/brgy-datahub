@@ -1,0 +1,191 @@
+/* ============================================= 
+
+   PROFILE PAGE 
+
+   ============================================= */ 
+
+ 
+
+/* Hero banner at the top of the profile card */ 
+
+.profile-banner { 
+
+  height: 110px; 
+
+  background: linear-gradient(135deg, #1a6278, #3a9abc, #0f4a5e); 
+
+  border-radius: 14px 14px 0 0; 
+
+  position: relative; 
+
+} 
+
+ 
+
+/* Avatar circle overlapping the banner */ 
+
+.profile-avatar { 
+
+  width: 90px; 
+
+  height: 90px; 
+
+  border-radius: 50%; 
+
+  border: 4px solid #fff; 
+
+  background: linear-gradient(135deg, #e8f4f8, #c8dde8); 
+
+  display: flex; 
+
+  align-items: center; 
+
+  justify-content: center; 
+
+  font-size: 38px; 
+
+  color: #1a6278; 
+
+  position: absolute; 
+
+  bottom: -45px; 
+
+  left: 50%; 
+
+  transform: translateX(-50%); 
+
+  box-shadow: 0 8px 24px rgba(26, 98, 120, 0.2); 
+
+} 
+
+ 
+
+/* Card body below the banner */ 
+
+.profile-card-body { 
+
+  background: #fff; 
+
+  border-radius: 0 0 14px 14px; 
+
+  padding: 56px 32px 32px; 
+
+  border: 1px solid #eaf2f6; 
+
+  border-top: none; 
+
+} 
+
+ 
+
+/* Name displayed at top of card body */ 
+
+.profile-name { 
+
+  text-align: center; 
+
+  font-size: 20px; 
+
+  font-weight: 800; 
+
+  color: #1a3a4a; 
+
+  margin-bottom: 4px; 
+
+} 
+
+.profile-role-tag { 
+
+  text-align: center; 
+
+  font-size: 12px; 
+
+  font-weight: 600; 
+
+  color: #7a9aaa; 
+
+  text-transform: uppercase; 
+
+  letter-spacing: 1.5px; 
+
+  margin-bottom: 28px; 
+
+} 
+
+ 
+
+/* Section divider with label */ 
+
+.profile-section-title { 
+
+  font-size: 11px; 
+
+  font-weight: 700; 
+
+  color: #7a9aaa; 
+
+  text-transform: uppercase; 
+
+  letter-spacing: 1px; 
+
+  margin-bottom: 14px; 
+
+  padding-bottom: 8px; 
+
+  border-bottom: 1.5px solid #eaf2f6; 
+
+} 
+
+ 
+
+/* Each field row: label + input */ 
+
+.profile-field { 
+
+  margin-bottom: 16px; 
+
+} 
+
+.profile-field label { 
+
+  display: block; 
+
+  font-size: 10.5px; 
+
+  font-weight: 700; 
+
+  color: #7a9aaa; 
+
+  text-transform: uppercase; 
+
+  letter-spacing: 1px; 
+
+  margin-bottom: 6px; 
+
+} 
+
+ 
+
+/* Logout button — red, full width */ 
+
+.btn-logout { 
+
+  width: 100%; 
+
+  justify-content: center; 
+
+  letter-spacing: 2px; 
+
+  text-transform: uppercase; 
+
+  padding: 13px; 
+
+  border-radius: 12px; 
+
+  font-size: 14px; 
+
+  font-weight: 700; 
+
+  margin-top: 8px; 
+
+} 

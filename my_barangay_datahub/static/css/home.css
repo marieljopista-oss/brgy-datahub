@@ -1,0 +1,153 @@
+
+
+body { 
+
+  background: linear-gradient(160deg, #c8e4f0 0%, #dbedf5 60%, #b8d8e8 100%); 
+
+} 
+
+ 
+
+/* Top bar */ 
+
+.home-topbar { 
+
+  display: flex; 
+
+  align-items: center; 
+
+  justify-content: space-between; 
+
+  padding: 22px 40px; 
+
+} 
+
+ 
+
+/* Brand name */ 
+
+.home-brand { 
+
+  font-size: 22px; 
+
+  font-weight: 800; 
+
+  color: #1a5f7a; 
+
+  letter-spacing: -0.3px; 
+
+} 
+
+ 
+
+/* Wrapper to center the grid */ 
+
+.home-body { 
+
+  display: flex; 
+
+  flex-direction: column; 
+
+  align-items: center; 
+
+  padding: 0 40px 60px; 
+
+} 
+
+ 
+
+/* Subtitle under the grid */ 
+
+.home-subtitle { 
+
+  font-size: 13px; 
+
+  color: #7a9aaa; 
+
+  margin-bottom: 28px; 
+
+  font-weight: 500; 
+
+} 
+
+ 
+
+/* 2-column grid */ 
+
+.menu-grid { 
+
+  display: grid; 
+
+  grid-template-columns: 1fr 1fr; 
+
+  gap: 16px; 
+
+  width: 100%; 
+
+  max-width: 860px; 
+
+} 
+
+ 
+
+/* Each big menu button */ 
+
+.menu-btn { 
+
+  display: flex; 
+
+  flex-direction: column; 
+
+  align-items: center; 
+
+  justify-content: center; 
+
+  gap: 10px; 
+
+  background: linear-gradient(135deg, #1a6278, #0f4a5e); 
+
+  color: #fff; 
+
+  border-radius: 18px; 
+
+  padding: 38px 20px; 
+
+  font-size: 15px; 
+
+  font-weight: 700; 
+
+  letter-spacing: 2px; 
+
+  text-decoration: none; 
+
+  text-align: center; 
+
+  transition: all 0.2s ease; 
+
+  box-shadow: 0 6px 20px rgba(26, 98, 120, 0.25); 
+
+  border: 1px solid rgba(255,255,255,0.1); 
+
+} 
+
+.menu-btn:hover { 
+
+  background: linear-gradient(135deg, #145268, #0a3e50); 
+
+  transform: translateY(-3px); 
+
+  box-shadow: 0 12px 28px rgba(26, 98, 120, 0.35); 
+
+} 
+
+ 
+
+/* Icon inside the menu button */ 
+
+.menu-btn .menu-icon { 
+
+  font-size: 26px; 
+
+  opacity: 0.9; 
+
+} 

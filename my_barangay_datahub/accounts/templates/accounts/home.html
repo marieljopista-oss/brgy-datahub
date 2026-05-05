@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html> 
+
+<html lang="en"> 
+
+<head> 
+
+  <meta charset="UTF-8" /> 
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+
+  <title>Barangay DataHub — Home</title> 
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/home.css' %}" /> 
+</head> 
+
+<body> 
+
+  <!-- Top bar: brand name + user avatar --> 
+
+  <div class="home-topbar"> 
+
+    <h2 class="home-brand">Barangay DataHub</h2> 
+
+    <!-- User avatar links to profile page --> 
+
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
+
+  </div> 
+
+
+  <div class="home-body"> 
+    <p class="home-subtitle">Select to get started</p> 
+
+    <!-- 6 navigation buttons in 2-column grid --> 
+    <div class="menu-grid"> 
+
+      <a href="{% url 'dashboard' %}" class="menu-btn">
+        <span class="menu-icon">&#128202;</span> 
+        DASHBOARD 
+      </a> 
+
+      <a href="{%url 'residents' %}" class="menu-btn"> 
+        <span class="menu-icon">&#128101;</span> 
+        RESIDENTS 
+      </a> 
+
+      <a href="{% url 'facilities' %}" class="menu-btn">
+        <span class="menu-icon">&#127963;</span> 
+        FACILITIES 
+      </a> 
+
+      <a href="{% url 'institution' %}" class="menu-btn">
+        <span class="menu-icon">&#127970;</span> 
+        INSTITUTIONS 
+      </a> 
+
+      <a href="{% url 'reports' %}" class="menu-btn"> 
+        <span class="menu-icon">&#128196;</span> 
+        REPORTS 
+      </a>
+
+      <a href="{% url 'settings' %}" class="menu-btn">
+        <span class="menu-icon">&#9881;</span> 
+        SETTINGS 
+      </a> 
+
+    </div> 
+
+  </div> 
+
+ 
+
+</body> 
+
+</html> 

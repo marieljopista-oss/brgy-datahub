@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+    <title>Barangay DataHub — Dashboard</title> 
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head> 
+
+<body> 
+  <div class="topbar"> 
+    <div class="topbar-left"> 
+      <a href="{% url 'home' %}" class="btn-back">&#8592;</a> 
+      <span class="topbar-badge">DASHBOARD</span> 
+    </div> 
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
+  </div> 
+
+  <div class="page-header"> 
+    <h1>Dashboard</h1> 
+    <p>Overview of Barangay Cogon</p> 
+  </div> 
+
+  <div class="page-content"> 
+    <div class="stat-row"> 
+      <div class="stat-card"> 
+        <div class="stat-label">&#128101; Total Population</div> 
+        <div class="stat-number">{{ total_pop|default:"0" }}</div> 
+        <div class="stat-sub">Male: {{ male_count|default:"0" }} &nbsp;|&nbsp; Female: {{ female_count|default:"0" }}</div> 
+      </div> 
+      
+      <div class="stat-card"> 
+        <div class="stat-label">&#127968; Households</div> 
+        <div class="stat-number">{{ total_households|default:"0" }}</div> 
+        <div class="stat-sub">Owned: 0 &nbsp;|&nbsp; Rented: 0</div> 
+      </div> 
+
+      <div class="stat-card"> 
+        <div class="stat-label">&#128188; Livelihood Types</div> 
+        <div class="stat-number">0</div> 
+        <div class="stat-sub">Different occupations</div> 
+      </div> 
+
+      <div class="stat-card"> 
+        <div class="stat-label">&#127963; Infrastructure</div> 
+        <div class="stat-number">0</div> 
+        <div class="stat-sub">Buildings and facilities</div> 
+      </div> 
+    </div> 
+
+    <div class="card"> 
+      <div class="card-title">Quick Actions</div> 
+      <div class="card-subtitle">Common tasks to manage barangay data</div> 
+      <div style="display:flex; gap:12px; flex-wrap:wrap;"> 
+        <a href="{% url 'residents' %}" class="btn btn-primary">&#43; Add Resident</a> 
+        <a href="{% url 'reports' %}"   class="btn btn-outline">&#128196; Generate Report</a> 
+        <a href="{% url 'facilities' %}" class="btn btn-outline">&#9881; Update Facilities</a> 
+      </div> 
+    </div> 
+  </div> 
+</body> 
+</html>
