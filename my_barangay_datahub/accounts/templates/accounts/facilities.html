@@ -1,487 +1,425 @@
-{% load static %}
-<!DOCTYPE html> 
-<html lang="en"> 
-
-<head> 
-
-  <meta charset="UTF-8" /> 
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-
-  <title>Barangay DataHub — Facilities</title> 
-
-  <link rel="stylesheet" href="{% static 'css/style.css' %}" /> 
-
-</head> 
-
-<body> 
-
- 
-
-  <div class="topbar"> 
-
-    <div class="topbar-left"> 
-
-      <a href="{% url 'home' %}" class="btn-back">&#8592;</a> 
-
-      <span class="topbar-badge">FACILITIES</span> 
-
-    </div> 
-
-    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
-
-  </div> 
-
- 
-
-  <div class="page-header"> 
-
-    <h1>Facilities &amp; Infrastructure</h1> 
-
-    <p>Manage barangay facilities and infrastructure</p> 
-
-  </div> 
-
- 
-
-  <div class="page-content"> 
-
- 
-
-    <div class="tab-bar"> 
-
-      <button class="tab-btn active" onclick="showTab('landwater', this)">Land &amp; Water</button> 
-
-      <button class="tab-btn" onclick="showTab('utilities', this)">Utilities</button> 
-
-      <button class="tab-btn" onclick="showTab('buildings', this)">Buildings</button> 
-
-      <button class="tab-btn" onclick="showTab('facilities', this)">Facilities</button> 
-
-      <button class="tab-btn" onclick="showTab('roads', this)">Road Network</button> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- LAND & WATER TAB --> 
-
-    <div id="tab-landwater"> 
-
-      <div class="two-col"> 
-
- 
-
-        <div class="card"> 
-
-          <div class="card-title">Bodies of Land</div> 
-
-          <div class="card-subtitle">Available land types in the barangay</div> 
-
-          <div class="inline-form"> 
-
-            <div class="inline-form-group"> 
-
-              <label>Land Name</label> 
-
-              <input type="text" placeholder="e.g., Rice Field Area" /> 
-
-            </div> 
-
-            <div class="inline-form-group"> 
-
-              <label>Type</label> 
-
-              <select> 
-
-                <option>Residential</option><option>Agricultural</option> 
-
-                <option>Forest</option><option>Commercial</option> 
-
-              </select> 
-
-            </div> 
-
-            <div class="inline-form-group"> 
-
-              <label>Area (hectares)</label> 
-
-              <input type="number" placeholder="0" /> 
-
-            </div> 
-
-            <button class="btn btn-primary">&#43; Add Land</button> 
-
-          </div> 
-
-          <div class="empty-state"> 
-
-            <div class="empty-icon">&#127759;</div> 
-
-            <p>No land records yet.<br/>Use the form above to add one.</p> 
-
-          </div> 
-
-        </div> 
-
- 
-
-        <div class="card"> 
-
-          <div class="card-title">Bodies of Water</div> 
-
-          <div class="card-subtitle">Water sources in the barangay</div> 
-
-          <div class="inline-form"> 
-
-            <div class="inline-form-group"> 
-
-              <label>Water Body Name</label> 
-
-              <input type="text" placeholder="e.g., Main River" /> 
-
-            </div> 
-
-            <div class="inline-form-group"> 
-
-              <label>Type</label> 
-
-              <select> 
-
-                <option>River</option><option>Creek</option> 
-
-                <option>Lake</option><option>Spring</option> 
-
-              </select> 
-
-            </div> 
-
-            <div class="inline-form-group"> 
-
-              <label>Description</label> 
-
-              <input type="text" placeholder="Brief description" /> 
-
-            </div> 
-
-            <button class="btn btn-primary">&#43; Add Water</button> 
-
-          </div> 
-
-          <div class="empty-state"> 
-
-            <div class="empty-icon">&#128167;</div> 
-
-            <p>No water body records yet.<br/>Use the form above to add one.</p> 
-
-          </div> 
-
-        </div> 
-
- 
-
-      </div> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- UTILITIES TAB --> 
-
-    <div id="tab-utilities" style="display:none;"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Infrastructure Utilities</div> 
-
-        <div class="card-subtitle">Basic utilities and services available in the barangay</div> 
-
-        <div class="two-col"> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-weight:700; margin-bottom:4px;">Electricity</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:10px;">Power supply available</div> 
-
-            <select><option>Available</option><option>Not Available</option></select> 
-
-          </div> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-weight:700; margin-bottom:4px;">Toilets</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:10px;">Total number of toilets</div> 
-
-            <input type="number" placeholder="0" /> 
-
-          </div> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-weight:700; margin-bottom:4px;">Water Supply</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:10px;">Clean water access</div> 
-
-            <select><option>Available</option><option>Not Available</option></select> 
-
-          </div> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-weight:700; margin-bottom:4px;">Bath Facilities</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:10px;">Total number of bath facilities</div> 
-
-            <input type="number" placeholder="0" /> 
-
-          </div> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-weight:700; margin-bottom:4px;">Waste Management</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:10px;">Garbage collection</div> 
-
-            <select><option>Available</option><option>Not Available</option></select> 
-
-          </div> 
-
-        </div> 
-
-        <button class="btn btn-primary" style="margin-top:8px;">&#128190; Save Utilities</button> 
-
-      </div> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- BUILDINGS TAB --> 
-
-    <div id="tab-buildings" style="display:none;"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Buildings &amp; Infrastructure</div> 
-
-        <div class="card-subtitle">Major buildings and facilities in the barangay</div> 
-
-        <div class="inline-form"> 
-
-          <div class="inline-form-group"> 
-
-            <label>Building Name</label> 
-
-            <input type="text" placeholder="e.g., Barangay Health Center" /> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Type</label> 
-
-            <select> 
-
-              <option>Health Facility</option><option>Educational</option> 
-
-              <option>Emergency</option><option>Government</option> 
-
-            </select> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Status</label> 
-
-            <select> 
-
-              <option>Operational</option><option>Under Repair</option><option>Closed</option> 
-
-            </select> 
-
-          </div> 
-
-          <button class="btn btn-primary">&#43; Add</button> 
-
-        </div> 
-
-        <div class="empty-state"> 
-
-          <div class="empty-icon">&#127963;</div> 
-
-          <p>No building records yet.<br/>Use the form above to add one.</p> 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- FACILITIES TAB --> 
-
-    <div id="tab-facilities" style="display:none;"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Primary Facilities &amp; Services</div> 
-
-        <div class="card-subtitle">Community facilities and services</div> 
-
-        <div class="inline-form"> 
-
-          <div class="inline-form-group"> 
-
-            <label>Facility Name</label> 
-
-            <input type="text" placeholder="e.g., Multi-Purpose Hall" /> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Type</label> 
-
-            <select> 
-
-              <option>Community</option><option>Security</option> 
-
-              <option>Transport</option><option>Health</option> 
-
-            </select> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Quantity</label> 
-
-            <input type="number" placeholder="1" /> 
-
-          </div> 
-
-          <button class="btn btn-primary">&#43; Add</button> 
-
-        </div> 
-
-        <div class="empty-state"> 
-
-          <div class="empty-icon">&#127970;</div> 
-
-          <p>No facility records yet.<br/>Use the form above to add one.</p> 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- ROAD NETWORK TAB --> 
-
-    <div id="tab-roads" style="display:none;"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Road Network</div> 
-
-        <div class="card-subtitle">Road infrastructure and maintenance status</div> 
-
-        <div class="inline-form"> 
-
-          <div class="inline-form-group"> 
-
-            <label>Road Type</label> 
-
-            <select> 
-
-              <option>Concrete</option><option>Gravel</option><option>Dirt Road</option> 
-
-            </select> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Length (km)</label> 
-
-            <input type="number" placeholder="0" /> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Maintenance Status</label> 
-
-            <select> 
-
-              <option>Good</option><option>Fair</option><option>Poor</option> 
-
-            </select> 
-
-          </div> 
-
-          <button class="btn btn-primary">&#43; Add</button> 
-
-        </div> 
-
-        <div class="empty-state"> 
-
-          <div class="empty-icon">&#128739;</div> 
-
-          <p>No road network records yet.<br/>Use the form above to add one.</p> 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-  </div> 
-
- 
-
-  <script> 
-
-    function showTab(name, btn) { 
-
-      ['landwater','utilities','buildings','facilities','roads'].forEach(function(t) { 
-
-        document.getElementById('tab-' + t).style.display = 'none'; 
-
-      }); 
-
-      document.getElementById('tab-' + name).style.display = 'block'; 
-
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); }); 
-
-      btn.classList.add('active'); 
-
-    } 
-
-  </script> 
-
- 
-
-</body> 
-
-</html> 
-
- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Facilities</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="home.html" class="btn-back">←</a>
+      <span class="topbar-badge">FACILITIES</span>
+    </div>
+    <a href="profile.html" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Facilities &amp; Infrastructure</h1>
+      <p>Manage barangay facilities and infrastructure</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('landwater',this,'fac')">Land &amp; Water</button>
+      <button class="tab-btn"        onclick="switchTab('utilities',this,'fac')">Utilities</button>
+      <button class="tab-btn"        onclick="switchTab('buildings',this,'fac')">Buildings</button>
+      <button class="tab-btn"        onclick="switchTab('facilities',this,'fac')">Facilities</button>
+      <button class="tab-btn"        onclick="switchTab('roads',this,'fac')">Road Network</button>
+    </div>
+
+
+    <!-- ====== LAND & WATER ====== -->
+    <div id="tab-landwater" class="tab-panel active" data-group="fac">
+      <div class="two-col">
+
+        <!-- Bodies of Land -->
+        <div class="card">
+          <div class="card-title">Bodies of Land</div>
+          <div class="card-subtitle">Available land types in the barangay</div>
+          <div class="inline-form">
+            <div class="inline-form-group">
+              <label>Land Name</label>
+              <input type="text" id="landName" placeholder="e.g., Rice Field Area"/>
+            </div>
+            <div class="inline-form-group">
+              <label>Type</label>
+              <select id="landType">
+                <option>Agricultural</option><option>Residential</option>
+                <option>Forest</option><option>Commercial</option><option>Industrial</option>
+              </select>
+            </div>
+            <div class="inline-form-group">
+              <label>Area (hectares)</label>
+              <input type="number" id="landArea" placeholder="0" min="0"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addLand()">➕ Add</button>
+          </div>
+          <div id="landEmpty" class="empty-state" style="padding:30px;">
+            <div class="empty-icon">🌾</div>
+            <div class="empty-sub">No land records yet.</div>
+          </div>
+          <div class="table-wrap" id="landTableWrap" style="display:none;">
+            <table class="data-table" id="landTable">
+              <thead><tr><th>Name</th><th>Type</th><th>Area</th><th class="text-right">Actions</th></tr></thead>
+              <tbody id="landBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Bodies of Water -->
+        <div class="card">
+          <div class="card-title">Bodies of Water</div>
+          <div class="card-subtitle">Water sources in the barangay</div>
+          <div class="inline-form">
+            <div class="inline-form-group">
+              <label>Water Body Name</label>
+              <input type="text" id="waterName" placeholder="e.g., Cogon River"/>
+            </div>
+            <div class="inline-form-group">
+              <label>Type</label>
+              <select id="waterType">
+                <option>River</option><option>Creek</option>
+                <option>Lake</option><option>Spring</option><option>Dam</option>
+              </select>
+            </div>
+            <div class="inline-form-group">
+              <label>Description</label>
+              <input type="text" id="waterDesc" placeholder="Brief description"/>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addWater()">➕ Add</button>
+          </div>
+          <div id="waterEmpty" class="empty-state" style="padding:30px;">
+            <div class="empty-icon">💧</div>
+            <div class="empty-sub">No water body records yet.</div>
+          </div>
+          <div class="table-wrap" id="waterTableWrap" style="display:none;">
+            <table class="data-table" id="waterTable">
+              <thead><tr><th>Name</th><th>Type</th><th>Description</th><th class="text-right">Actions</th></tr></thead>
+              <tbody id="waterBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end land & water -->
+
+
+    <!-- ====== UTILITIES ====== -->
+    <div id="tab-utilities" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Infrastructure Utilities</div>
+        <div class="card-subtitle">Basic utilities and services available in the barangay</div>
+
+        <div class="two-col">
+
+          <div class="card" style="border:1.5px solid #eaf2f6;">
+            <div style="font-size:20px;margin-bottom:8px;">⚡</div>
+            <div class="card-title">Electricity</div>
+            <div class="card-subtitle">Power supply available</div>
+            <select id="utilElec" onchange="markUtilSaved()">
+              <option value="Available">Available</option>
+              <option value="Not Available">Not Available</option>
+            </select>
+          </div>
+
+          <div class="card" style="border:1.5px solid #eaf2f6;">
+            <div style="font-size:20px;margin-bottom:8px;">🚿</div>
+            <div class="card-title">Water Supply</div>
+            <div class="card-subtitle">Clean water access</div>
+            <select id="utilWater" onchange="markUtilSaved()">
+              <option value="Available">Available</option>
+              <option value="Not Available">Not Available</option>
+            </select>
+          </div>
+
+          <div class="card" style="border:1.5px solid #eaf2f6;">
+            <div style="font-size:20px;margin-bottom:8px;">🗑️</div>
+            <div class="card-title">Waste Management</div>
+            <div class="card-subtitle">Garbage collection service</div>
+            <select id="utilWaste" onchange="markUtilSaved()">
+              <option value="Available">Available</option>
+              <option value="Not Available">Not Available</option>
+            </select>
+          </div>
+
+          <div class="card" style="border:1.5px solid #eaf2f6;">
+            <div style="font-size:20px;margin-bottom:8px;">🚽</div>
+            <div class="card-title">Toilets</div>
+            <div class="card-subtitle">Total number of toilets</div>
+            <input type="number" id="utilToilets" placeholder="0" min="0" onchange="markUtilSaved()"/>
+          </div>
+
+          <div class="card" style="border:1.5px solid #eaf2f6;">
+            <div style="font-size:20px;margin-bottom:8px;">🛁</div>
+            <div class="card-title">Bath Facilities</div>
+            <div class="card-subtitle">Total number of bath facilities</div>
+            <input type="number" id="utilBath" placeholder="0" min="0" onchange="markUtilSaved()"/>
+          </div>
+
+        </div>
+
+        <button class="btn btn-primary mt-12" onclick="saveUtilities()">💾 Save Utilities</button>
+      </div>
+    </div><!-- end utilities -->
+
+
+    <!-- ====== BUILDINGS ====== -->
+    <div id="tab-buildings" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Buildings &amp; Infrastructure</div>
+        <div class="card-subtitle">Major buildings and facilities in the barangay</div>
+        <div class="inline-form">
+          <div class="inline-form-group">
+            <label>Building Name</label>
+            <input type="text" id="bldgName" placeholder="e.g., Barangay Health Center"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Type</label>
+            <select id="bldgType">
+              <option>Health Facility</option><option>Educational</option>
+              <option>Emergency</option><option>Government</option><option>Religious</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Status</label>
+            <select id="bldgStatus">
+              <option>Operational</option><option>Under Repair</option><option>Closed</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addBuilding()">➕ Add</button>
+        </div>
+        <div id="bldgEmpty" class="empty-state" style="padding:30px;">
+          <div class="empty-icon">🏛️</div>
+          <div class="empty-sub">No building records yet.</div>
+        </div>
+        <div class="table-wrap" id="bldgTableWrap" style="display:none;">
+          <table class="data-table" id="bldgTable">
+            <thead><tr><th>Name</th><th>Type</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+            <tbody id="bldgBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end buildings -->
+
+
+    <!-- ====== FACILITIES ====== -->
+    <div id="tab-facilities" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Primary Facilities &amp; Services</div>
+        <div class="card-subtitle">Community facilities and services</div>
+        <div class="inline-form">
+          <div class="inline-form-group">
+            <label>Facility Name</label>
+            <input type="text" id="facName" placeholder="e.g., Multi-Purpose Hall"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Type</label>
+            <select id="facType">
+              <option>Community</option><option>Security</option>
+              <option>Transport</option><option>Health</option><option>Education</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Quantity</label>
+            <input type="number" id="facQty" placeholder="1" min="1" value="1"/>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addFacility()">➕ Add</button>
+        </div>
+        <div id="facEmpty" class="empty-state" style="padding:30px;">
+          <div class="empty-icon">🏗️</div>
+          <div class="empty-sub">No facility records yet.</div>
+        </div>
+        <div class="table-wrap" id="facTableWrap" style="display:none;">
+          <table class="data-table" id="facTable">
+            <thead><tr><th>Name</th><th>Type</th><th>Quantity</th><th class="text-right">Actions</th></tr></thead>
+            <tbody id="facBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end facilities -->
+
+
+    <!-- ====== ROAD NETWORK ====== -->
+    <div id="tab-roads" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Road Network</div>
+        <div class="card-subtitle">Road infrastructure and maintenance status</div>
+        <div class="inline-form">
+          <div class="inline-form-group">
+            <label>Road Type</label>
+            <select id="roadType">
+              <option>Concrete</option><option>Gravel</option>
+              <option>Asphalt</option><option>Dirt Road</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Length (km)</label>
+            <input type="number" id="roadLen" placeholder="0.0" min="0" step="0.1"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Maintenance Status</label>
+            <select id="roadStatus">
+              <option>Good</option><option>Fair</option><option>Poor</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addRoad()">➕ Add</button>
+        </div>
+        <div id="roadEmpty" class="empty-state" style="padding:30px;">
+          <div class="empty-icon">🛣️</div>
+          <div class="empty-sub">No road network records yet.</div>
+        </div>
+        <div class="table-wrap" id="roadTableWrap" style="display:none;">
+          <table class="data-table" id="roadTable">
+            <thead><tr><th>Type</th><th>Length (km)</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+            <tbody id="roadBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end roads -->
+
+  </div><!-- end page-content -->
+
+  <script src="app.js"></script>
+  <script>
+
+    /* ---- Generic helper: toggle empty state ---- */
+    function toggleEmpty(bodyId, emptyId, wrapId) {
+      const count = document.getElementById(bodyId).querySelectorAll('tr').length;
+      document.getElementById(emptyId).style.display = count ? 'none' : '';
+      document.getElementById(wrapId).style.display  = count ? '' : 'none';
+    }
+
+    /* ---- Status badge helper ---- */
+    function statusBadge(status) {
+      const map = { Operational:'badge-green', Good:'badge-green', Fair:'badge-yellow', Poor:'badge-red', 'Under Repair':'badge-yellow', Closed:'badge-red' };
+      return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
+    }
+
+    /* ---- Delete row helper ---- */
+    function deleteRow(rowId, emptyId, wrapId, label) {
+      showConfirm('Delete Record', `Delete <strong>${label}</strong>? This cannot be undone.`, function() {
+        const row = document.getElementById(rowId);
+        if (row) row.remove();
+        toggleEmpty(rowId.replace('row-','') + 'Body', emptyId, wrapId);
+        showToast(`${label} deleted.`, 'warning');
+      });
+    }
+
+    /* ---- Row ID counters ---- */
+    let landIdx=0, waterIdx=0, bldgIdx=0, facIdx=0, roadIdx=0;
+
+    /* ---- LAND ---- */
+    function addLand() {
+      const name = document.getElementById('landName').value.trim();
+      const type = document.getElementById('landType').value;
+      const area = document.getElementById('landArea').value;
+      if (!name) { showToast('Enter a land name.', 'error'); return; }
+      const id = 'row-land-' + (++landIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${type}</td>
+        <td>${area ? area + ' hectares' : '—'}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('landBody','landEmpty','landTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+      document.getElementById('landBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('landName').value = '';
+      document.getElementById('landArea').value = '';
+      toggleEmpty('landBody','landEmpty','landTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- WATER ---- */
+    function addWater() {
+      const name = document.getElementById('waterName').value.trim();
+      const type = document.getElementById('waterType').value;
+      const desc = document.getElementById('waterDesc').value.trim();
+      if (!name) { showToast('Enter a water body name.', 'error'); return; }
+      const id = 'row-water-' + (++waterIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${type}</td>
+        <td>${desc || '<span class="na">—</span>'}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('waterBody','waterEmpty','waterTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+      document.getElementById('waterBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('waterName').value = '';
+      document.getElementById('waterDesc').value = '';
+      toggleEmpty('waterBody','waterEmpty','waterTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- BUILDINGS ---- */
+    function addBuilding() {
+      const name   = document.getElementById('bldgName').value.trim();
+      const type   = document.getElementById('bldgType').value;
+      const status = document.getElementById('bldgStatus').value;
+      if (!name) { showToast('Enter a building name.', 'error'); return; }
+      const id = 'row-bldg-' + (++bldgIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${type}</td>
+        <td>${statusBadge(status)}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('bldgBody','bldgEmpty','bldgTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+      document.getElementById('bldgBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('bldgName').value = '';
+      toggleEmpty('bldgBody','bldgEmpty','bldgTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- FACILITIES ---- */
+    function addFacility() {
+      const name = document.getElementById('facName').value.trim();
+      const type = document.getElementById('facType').value;
+      const qty  = document.getElementById('facQty').value || '1';
+      if (!name) { showToast('Enter a facility name.', 'error'); return; }
+      const id = 'row-fac-' + (++facIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${type}</td><td>${qty}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('facBody','facEmpty','facTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+      document.getElementById('facBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('facName').value = '';
+      document.getElementById('facQty').value  = '1';
+      toggleEmpty('facBody','facEmpty','facTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- ROADS ---- */
+    function addRoad() {
+      const type   = document.getElementById('roadType').value;
+      const len    = document.getElementById('roadLen').value;
+      const status = document.getElementById('roadStatus').value;
+      if (!len) { showToast('Enter road length.', 'error'); return; }
+      const id = 'row-road-' + (++roadIdx);
+      const label = type + ' (' + len + ' km)';
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${type}</td><td>${len} km</td>
+        <td>${statusBadge(status)}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('roadBody','roadEmpty','roadTableWrap');showToast('Record deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+      document.getElementById('roadBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('roadLen').value = '';
+      toggleEmpty('roadBody','roadEmpty','roadTableWrap');
+      showToast(`${label} added.`, 'success');
+    }
+
+    /* ---- UTILITIES ---- */
+    function saveUtilities() {
+      showToast('Utilities saved successfully!', 'success');
+      /* Django: POST to /facilities/utilities/save/ */
+    }
+    function markUtilSaved() { /* mark as unsaved — could add a dirty indicator */ }
+
+  </script>
+
+</body>
+</html>
