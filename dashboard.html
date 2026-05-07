@@ -1,19 +1,20 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Barangay DataHub — Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 </head>
 <body>
 
   <div class="topbar">
     <div class="topbar-left">
-      <a href="home.html" class="btn-back">←</a>
+      <a href="{% url 'home' %}" class="btn-back">←</a>
       <span class="topbar-badge">DASHBOARD</span>
     </div>
-    <a href="profile.html" class="user-avatar">👤</a>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
   </div>
 
   <div class="page-header">
