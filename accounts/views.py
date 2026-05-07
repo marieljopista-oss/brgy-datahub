@@ -37,10 +37,10 @@ def home(request):
 # LOGIN
 # ============================================================
 
-def login_view(request):
+def login(request):
    from django.contrib.auth import authenticate, login as auth_login
 
-def login_view(request):
+def login(request):
     # If the user is already logged in, send them to home
     if request.user.is_authenticated:
         return redirect('home')
@@ -61,7 +61,7 @@ def login_view(request):
 
 def logout_view(request):
     request.session.flush()
-    return redirect('login_view')
+    return redirect('login')
 
 
 # ============================================================
