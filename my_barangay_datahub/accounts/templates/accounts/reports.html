@@ -1,347 +1,240 @@
-
-{% load static %}
-<!DOCTYPE html> 
-
-<html lang="en"> 
-
-<head> 
-
-  <meta charset="UTF-8" /> 
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-
-  <title>Barangay DataHub — Reports</title> 
-
-  <link rel="stylesheet" href="{% static 'css/style.css' %}" /> 
-
-</head> 
-
-<body> 
-
- 
-
-  <div class="topbar"> 
-
-    <div class="topbar-left"> 
-
-      <a href="{% url 'home' %}" class="btn-back">&#8592;</a> 
-
-      <span class="topbar-badge">REPORTS</span> 
-
-    </div> 
-
-    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
-
-  </div> 
-
- 
-
-  <!-- Page title + export buttons --> 
-
-  <div class="page-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:10px;"> 
-
-    <div> 
-
-      <h1>Reports &amp; Analytics</h1> 
-
-      <p>Generate and export barangay reports</p> 
-
-    </div> 
-
-    <div style="display:flex; gap:10px; margin-top:10px;"> 
-
-      <button class="btn btn-outline">&#11015; Export PDF</button> 
-
-      <button class="btn btn-outline">&#11015; Export Excel</button> 
-
-    </div> 
-
-  </div> 
-
- 
-
-  <div class="page-content"> 
-
- 
-
-    <!-- 3 summary stat cards --> 
-
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px;"> 
-
-      <div class="stat-card"> 
-
-        <div class="stat-label">&#128101; Total Population</div> 
-
-        <div class="stat-number" style="color:#1a6278;">0</div> 
-
-        <div class="stat-sub">0 with disabilities</div> 
-
-      </div> 
-
-      <div class="stat-card"> 
-
-        <div class="stat-label">&#127968; Total Households</div> 
-
-        <div class="stat-number" style="color:#1a6278;">0</div> 
-
-        <div class="stat-sub">Avg. 0 members per household</div> 
-
-      </div> 
-
-      <div class="stat-card"> 
-
-        <div class="stat-label">&#127963; Infrastructure</div> 
-
-        <div class="stat-number" style="color:#1a6278;">0</div> 
-
-        <div class="stat-sub">Buildings and facilities</div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Charts row 1 --> 
-
-    <div class="two-col"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Population by Age Group</div> 
-
-        <div class="card-subtitle">Distribution of residents across age ranges</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#128202;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-      <div class="card"> 
-
-        <div class="card-title">Gender Distribution</div> 
-
-        <div class="card-subtitle">Population breakdown by gender</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#9898;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Charts row 2 --> 
-
-    <div class="two-col"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Livelihood Distribution</div> 
-
-        <div class="card-subtitle">Top occupations in the barangay</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#128188;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-      <div class="card"> 
-
-        <div class="card-title">House Ownership</div> 
-
-        <div class="card-subtitle">Breakdown by ownership type</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#127968;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Charts row 3 --> 
-
-    <div class="two-col"> 
-
-      <div class="card"> 
-
-        <div class="card-title">House Materials</div> 
-
-        <div class="card-subtitle">Construction materials used</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#127963;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-      <div class="card"> 
-
-        <div class="card-title">Infrastructure by Type</div> 
-
-        <div class="card-subtitle">Buildings and facilities breakdown</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#127970;</span> 
-
-          Chart will appear once facilities are added 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Charts row 4 --> 
-
-    <div class="two-col"> 
-
-      <div class="card"> 
-
-        <div class="card-title">Detailed Age Group Distribution</div> 
-
-        <div class="card-subtitle">Population breakdown by specific age ranges</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#128202;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-      <div class="card"> 
-
-        <div class="card-title">Disability by Gender</div> 
-
-        <div class="card-subtitle">Breakdown by gender and disability status</div> 
-
-        <div class="chart-area"> 
-
-          <span>&#9898;</span> 
-
-          Chart will appear once residents are added 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Age group disability analysis --> 
-
-    <div class="card"> 
-
-      <div class="card-title">Age Group Disability Analysis</div> 
-
-      <div class="card-subtitle">Disability status breakdown for each age group</div> 
-
-      <div class="chart-area" style="height:220px;"> 
-
-        <span>&#128202;</span> 
-
-        Chart will appear once residents are added 
-
-      </div> 
-
-    </div> 
-
- 
-
-    <!-- Disaster Preparedness Report --> 
-
-    <div class="card"> 
-
-      <div class="card-title">Disaster Preparedness Report</div> 
-
-      <div class="card-subtitle">Evacuation centers and emergency facilities</div> 
-
-      <div class="two-col" style="margin-bottom:0;"> 
-
-        <div> 
-
-          <p style="font-size:12px; font-weight:700; color:#4a6a7a; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Evacuation Centers</p> 
-
-          <div class="empty-state" style="padding:20px;"> 
-
-            <p style="font-size:12px;">No evacuation centers added yet.</p> 
-
-          </div> 
-
-        </div> 
-
-        <div> 
-
-          <p style="font-size:12px; font-weight:700; color:#4a6a7a; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">Vulnerable Population</p> 
-
-          <table class="data-table"> 
-
-            <tbody> 
-
-              <tr><td>Persons with Disability</td> <td style="text-align:right;">0</td></tr> 
-
-              <tr><td>Children (0–14)</td>          <td style="text-align:right;">0</td></tr> 
-
-              <tr><td>Senior Citizens (60+)</td>    <td style="text-align:right;">0</td></tr> 
-
-              <tr> 
-
-                <td style="font-weight:700; border-top:1.5px solid #eaf2f6; padding-top:12px;">Total Vulnerable</td> 
-
-                <td style="text-align:right; font-weight:800; border-top:1.5px solid #eaf2f6; padding-top:12px;">0</td> 
-
-              </tr> 
-
-            </tbody> 
-
-          </table> 
-
-        </div> 
-
-      </div> 
-
-    </div> 
-
- 
-
-  </div> 
-
- 
-
-</body> 
-
-</html> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Reports</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="home.html" class="btn-back">←</a>
+      <span class="topbar-badge">REPORTS</span>
+    </div>
+    <a href="profile.html" class="user-avatar">👤</a>
+  </div>
+
+  <!-- Page header with export buttons -->
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Reports &amp; Analytics</h1>
+      <p>Generate and export barangay reports</p>
+    </div>
+    <div class="flex gap-8 flex-wrap" style="margin-top:6px;">
+      <button class="btn btn-outline" onclick="exportPDF()">
+        ⬇️ Export PDF
+      </button>
+      <button class="btn btn-outline" onclick="exportExcel()">
+        ⬇️ Export Excel
+      </button>
+      <button class="btn btn-outline" onclick="window.print()">
+        🖨️ Print
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ---- SUMMARY STAT CARDS ---- -->
+    <!-- Django: replace 0 with {{ stats.* }} -->
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Population</div>
+        <div class="stat-number" style="color:#1a6278;">0</div>
+        <div class="stat-sub">0 with disabilities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-label">Total Households</div>
+        <div class="stat-number" style="color:#1a6278;">0</div>
+        <div class="stat-sub">Avg. 0 members per household</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏗️</div>
+        <div class="stat-label">Infrastructure</div>
+        <div class="stat-number" style="color:#1a6278;">0</div>
+        <div class="stat-sub">Buildings and facilities</div>
+      </div>
+    </div>
+
+    <!-- ---- ROW 1: Age Group + Gender ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Population by Age Group</div>
+        <div class="card-subtitle">Distribution of residents across age ranges</div>
+        <!-- Django: pass age_data as JSON to Chart.js -->
+        <canvas id="chartAge" height="180" style="margin-top:10px;"></canvas>
+        <div class="chart-area" id="chartAgePlaceholder">
+          <span class="chart-icon">📊</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gender Distribution</div>
+        <div class="card-subtitle">Population breakdown by gender</div>
+        <canvas id="chartGender" height="180" style="margin-top:10px;"></canvas>
+        <div class="chart-area" id="chartGenderPlaceholder">
+          <span class="chart-icon">⭕</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ROW 2: Livelihood + House Ownership ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Livelihood Distribution</div>
+        <div class="card-subtitle">Top occupations in the barangay</div>
+        <div class="chart-area">
+          <span class="chart-icon">💼</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">House Ownership</div>
+        <div class="card-subtitle">Breakdown by ownership type</div>
+        <div class="chart-area">
+          <span class="chart-icon">🏠</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ROW 3: House Materials + Infrastructure ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">House Materials</div>
+        <div class="card-subtitle">Construction materials used</div>
+        <div class="chart-area">
+          <span class="chart-icon">🧱</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Infrastructure by Type</div>
+        <div class="card-subtitle">Buildings and facilities breakdown</div>
+        <div class="chart-area">
+          <span class="chart-icon">🏛️</span>
+          Chart appears once facilities are added
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ROW 4: Detailed Age + Disability by Gender ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Detailed Age Group Distribution</div>
+        <div class="card-subtitle">Population breakdown by specific age ranges</div>
+        <div class="chart-area">
+          <span class="chart-icon">📊</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Disability by Gender</div>
+        <div class="card-subtitle">Breakdown by gender and disability status</div>
+        <div class="chart-area">
+          <span class="chart-icon">⭕</span>
+          Chart appears once residents are added
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- Age Group Disability Analysis ---- -->
+    <div class="card">
+      <div class="card-title">Age Group Disability Analysis</div>
+      <div class="card-subtitle">Disability status breakdown for each age group</div>
+      <div class="chart-area" style="height:220px;">
+        <span class="chart-icon">📊</span>
+        Chart appears once residents are added
+      </div>
+    </div>
+
+    <!-- ---- Disaster Preparedness ---- -->
+    <div class="card">
+      <div class="card-title">Disaster Preparedness Report</div>
+      <div class="card-subtitle">Evacuation centers and vulnerable population</div>
+      <div class="two-col" style="margin-bottom:0;">
+
+        <div>
+          <p class="settings-label" style="margin-bottom:10px;">Evacuation Centers</p>
+          <div class="empty-state" style="padding:20px 10px;">
+            <div class="empty-icon" style="font-size:24px;">🏕️</div>
+            <div class="empty-sub">No evacuation centers added yet.</div>
+          </div>
+        </div>
+
+        <div>
+          <p class="settings-label" style="margin-bottom:10px;">Vulnerable Population</p>
+          <!-- Django: replace 0 with {{ stats.pwds }}, etc. -->
+          <table class="data-table">
+            <tbody>
+              <tr>
+                <td>Persons with Disability</td>
+                <td class="text-right color-teal fw-700">0</td>
+              </tr>
+              <tr>
+                <td>Children (0 – 14 yrs)</td>
+                <td class="text-right color-teal fw-700">0</td>
+              </tr>
+              <tr>
+                <td>Senior Citizens (60+)</td>
+                <td class="text-right color-teal fw-700">0</td>
+              </tr>
+              <tr style="border-top:2px solid #eaf2f6;">
+                <td class="fw-700" style="padding-top:12px;">Total Vulnerable</td>
+                <td class="text-right fw-700 color-teal" style="padding-top:12px; font-size:16px;">0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ---- Sector Summary Table ---- -->
+    <div class="card">
+      <div class="card-title">Sector Summary</div>
+      <div class="card-subtitle">Complete breakdown of population by sector</div>
+      <div class="table-wrap">
+        <!-- Django: {% for sector in sector_data %} ... {% endfor %} -->
+        <table class="data-table">
+          <thead>
+            <tr><th>Sector</th><th class="text-right">Count</th><th class="text-right">% of Population</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Labor Force</td>                            <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Unemployed</td>                            <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Out of School Children (OSC) 6–14 yrs</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Out of School Youth (OSY) 15–24 yrs</td>  <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Persons with Disabilities (PWDs)</td>      <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Overseas Filipino Workers (OFWs)</td>      <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Solo Parents</td>                          <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>Indigenous Peoples (IPs)</td>              <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            <tr><td>LGBTQ+ Members</td>                        <td class="text-right">0</td><td class="text-right">0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end page-content -->
+
+  <script src="app.js"></script>
+  <script>
+    /* Export handlers */
+    /* Django: these will call /reports/export/pdf/ and /reports/export/excel/ */
+    function exportPDF() {
+      showToast('Generating PDF report…', 'info');
+      /* Django: window.location.href = '/reports/export/pdf/'; */
+    }
+    function exportExcel() {
+      showToast('Generating Excel report…', 'info');
+      /* Django: window.location.href = '/reports/export/excel/'; */
+    }
+  </script>
+
+</body>
+</html>
