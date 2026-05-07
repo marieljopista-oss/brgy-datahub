@@ -1,317 +1,318 @@
 {% load static %}
-<!DOCTYPE html> 
-
-<html lang="en"> 
-
-<head> 
-
-  <meta charset="UTF-8" /> 
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-
-  <title>Barangay DataHub — Settings</title> 
-
-  <link rel="stylesheet" href="{% static 'css/style.css' %}" /> 
-
-</head> 
-
-<body> 
-
- 
-
-  <div class="topbar"> 
-
-    <div class="topbar-left"> 
-
-      <a href="{% url 'home' %}" class="btn-back">&#8592;</a> 
-
-      <span class="topbar-badge">SETTINGS</span> 
-
-    </div> 
-
-    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
-
-  </div> 
-
- 
-
-  <div class="page-header"> 
-
-    <h1>Settings</h1> 
-
-    <p>Manage system settings and configuration</p> 
-
-  </div> 
-
- 
-
-  <div class="page-content"> 
-
- 
-
-    <div class="tab-bar"> 
-
-      <button class="tab-btn active" onclick="showTab('profile', this)">Barangay Profile</button> 
-
-      <button class="tab-btn" onclick="showTab('users', this)">User Management</button> 
-
-      <button class="tab-btn" onclick="showTab('backup', this)">Backup &amp; Export</button> 
-
-    </div> 
-
- 
-
- 
-
-    <!-- BARANGAY PROFILE TAB --> 
-
-    <div id="tab-profile"> 
-
- 
-
-      <div class="card"> 
-
-        <div class="card-title">Barangay Profile Information</div> 
-
-        <div class="card-subtitle">Edit the vision, mission, and goals of your barangay</div> 
-
- 
-
-        <label class="settings-label">Vision</label> 
-
-        <textarea class="settings-field" rows="3" placeholder="Enter barangay vision statement..."></textarea> 
-
- 
-
-        <label class="settings-label">Mission</label> 
-
-        <textarea class="settings-field" rows="3" placeholder="Enter barangay mission statement..."></textarea> 
-
- 
-
-        <label class="settings-label">Goals</label> 
-
-        <textarea class="settings-field" rows="3" placeholder="Enter barangay goals..."></textarea> 
-
- 
-
-        <button class="btn btn-primary">&#128190; Save Changes</button> 
-
-      </div> 
-
- 
-
-      <div class="card"> 
-
-        <div class="card-title">Barangay Information</div> 
-
-        <div class="card-subtitle">Basic information about your barangay</div> 
-
- 
-
-        <div class="settings-grid"> 
-
-          <div> 
-
-            <label class="settings-label">Barangay Name</label> 
-
-            <input class="settings-field" type="text" placeholder="Enter barangay name" /> 
-
-          </div> 
-
-          <div> 
-
-            <label class="settings-label">Municipality / City</label> 
-
-            <input class="settings-field" type="text" placeholder="Enter municipality or city" /> 
-
-          </div> 
-
-          <div> 
-
-            <label class="settings-label">Province</label> 
-
-            <input class="settings-field" type="text" placeholder="Enter province" /> 
-
-          </div> 
-
-          <div> 
-
-            <label class="settings-label">Region</label> 
-
-            <input class="settings-field" type="text" placeholder="Enter region" /> 
-
-          </div> 
-
-        </div> 
-
- 
-
-        <button class="btn btn-primary" style="margin-top:4px;">&#128190; Save Changes</button> 
-
-      </div> 
-
- 
-
-    </div> 
-
- 
-
- 
-
-    <!-- USER MANAGEMENT TAB --> 
-
-    <div id="tab-users" style="display:none;"> 
-
- 
-
-      <div class="card"> 
-
-        <div class="card-title">User Management</div> 
-
-        <div class="card-subtitle">Manage system users and their roles</div> 
-
- 
-
-        <div class="inline-form" style="margin-bottom:18px;"> 
-
-          <div class="inline-form-group"> 
-
-            <label>Username</label> 
-
-            <input type="text" placeholder="Enter username" /> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Password</label> 
-
-            <input type="password" placeholder="Enter password" /> 
-
-          </div> 
-
-          <div class="inline-form-group"> 
-
-            <label>Role</label> 
-
-            <select> 
-
-              <option>Captain</option> 
-
-              <option>Secretary</option> 
-
-              <option>Health Worker</option> 
-
-            </select> 
-
-          </div> 
-
-          <button class="btn btn-primary">&#43; Add User</button> 
-
-        </div> 
-
- 
-
-        <div class="empty-state"> 
-
-          <div class="empty-icon">&#128100;</div> 
-
-          <p>No users added yet.<br/>Use the form above to create the first account.</p> 
-
-        </div> 
-
-      </div> 
-
- 
-
-      <div class="card"> 
-
-        <div class="card-title">Role Permissions</div> 
-
-        <div class="card-subtitle">Overview of role-based access control</div> 
-
- 
-
-        <div class="role-box"> 
-
-          <div class="role-name">&#128081; Captain</div> 
-
-          <p>Full system access including user management, all modules, and system settings.</p> 
-
-        </div> 
-
-        <div class="role-box"> 
-
-          <div class="role-name">&#128196; Secretary</div> 
-
-          <p>Access to residents, facilities, institutions, and reports. Can add, edit, and delete records.</p> 
-
-        </div> 
-
-        <div class="role-box"> 
-
-          <div class="role-name">&#129658; Health Worker</div> 
-
-          <p>Access to residents module and health-related reports. Can view and update health information.</p> 
-
-        </div> 
-
-      </div> 
-
- 
-
-    </div> 
-
- 
-
- 
-
-    <!-- BACKUP & EXPORT TAB --> 
-
-    <div id="tab-backup" style="display:none;"> 
-
- 
-
-      <div class="card"> 
-
-        <div class="card-title">Backup &amp; Data Export</div> 
-
-        <div class="card-subtitle">Create backups and export system data</div> 
-
- 
-
-        <div class="two-col"> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-size:22px; margin-bottom:10px;">&#128190;</div> 
-
-            <div style="font-weight:700; margin-bottom:5px;">Create Backup</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:16px; line-height:1.5;">Export all system data to a backup file for safekeeping.</div> 
-
-            <button class="btn btn-primary" style="width:100%; justify-content:center;">&#11015; Create Backup</button> 
-
-          </div> 
-
-          <div class="card" style="border:1.5px solid #eaf2f6;"> 
-
-            <div style="font-size:22px; margin-bottom:10px;">&#128230;</div> 
-
-            <div style="font-weight:700; margin-bottom:5px;">Restore Backup</div> 
-
-            <div style="font-size:12px; color:#7a9aaa; margin-bottom:16px; line-height:1.5;">Import data from a previously created backup file.</div> 
-
-            <button class="btn btn-outline" style="width:100%; justify-content:center;">&#11014; Import Backup</button> 
-
-          </div> 
-
-        </div> 
-
- 
-
-        <div class="divider"></div> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Settings</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <span class="topbar-badge">SETTINGS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Settings</h1>
+      <p>Manage system settings and configuration</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('profile',this,'set')">Barangay Profile</button>
+      <button class="tab-btn"        onclick="switchTab('users',this,'set')">User Management</button>
+      <button class="tab-btn"        onclick="switchTab('backup',this,'set')">Backup &amp; Export</button>
+    </div>
+
+
+    <!-- ====== BARANGAY PROFILE ====== -->
+    <div id="tab-profile" class="tab-panel active" data-group="set">
+
+      <!-- Vision / Mission / Goals -->
+      <div class="card">
+        <div class="card-title">Barangay Profile Information</div>
+        <div class="card-subtitle">Edit the vision, mission, and goals of your barangay</div>
+
+        <!-- Django: value="{{ barangay.vision }}" etc. -->
+        <div style="margin-bottom:16px;">
+          <label>Vision</label>
+          <textarea id="bVision" placeholder="Enter barangay vision statement…" rows="3"></textarea>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label>Mission</label>
+          <textarea id="bMission" placeholder="Enter barangay mission statement…" rows="3"></textarea>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label>Goals</label>
+          <textarea id="bGoals" placeholder="Enter barangay goals…" rows="3"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Save Changes</button>
+      </div>
+
+      <!-- Basic Info -->
+      <div class="card">
+        <div class="card-title">Barangay Information</div>
+        <div class="card-subtitle">Basic information about your barangay</div>
+
+        <div class="settings-grid" style="margin-bottom:16px;">
+          <div>
+            <label>Barangay Name</label>
+            <input type="text" id="bName" placeholder="e.g., Barangay Cogon"/>
+          </div>
+          <div>
+            <label>Municipality / City</label>
+            <input type="text" id="bMunicipality" placeholder="e.g., Cagayan de Oro"/>
+          </div>
+          <div>
+            <label>Province</label>
+            <input type="text" id="bProvince" placeholder="e.g., Misamis Oriental"/>
+          </div>
+          <div>
+            <label>Region</label>
+            <input type="text" id="bRegion" placeholder="e.g., Region X"/>
+          </div>
+          <div>
+            <label>Barangay Captain</label>
+            <input type="text" id="bCaptain" placeholder="Full name of the Barangay Captain"/>
+          </div>
+          <div>
+            <label>Contact Number</label>
+            <input type="tel" id="bContact" placeholder="+63 9XX XXX XXXX"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveBarangayInfo()">💾 Save Changes</button>
+      </div>
+
+    </div><!-- end profile tab -->
+
+
+    <!-- ====== USER MANAGEMENT ====== -->
+    <div id="tab-users" class="tab-panel" data-group="set">
+
+      <div class="card">
+        <div class="card-title">User Management</div>
+        <div class="card-subtitle">Create and manage system users and their roles</div>
+
+        <!-- Add user form -->
+        <div class="inline-form" style="margin-bottom:20px;">
+          <div class="inline-form-group">
+            <label>Username</label>
+            <input type="text" id="uUsername" placeholder="e.g., captain_admin"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Password</label>
+            <input type="password" id="uPassword" placeholder="At least 8 characters"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Role</label>
+            <select id="uRole">
+              <option value="Captain">Captain</option>
+              <option value="Secretary">Secretary</option>
+              <option value="Health Worker">Health Worker</option>
+              <option value="Treasurer">Treasurer</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addUser()">➕ Add User</button>
+        </div>
+
+        <!-- Empty state -->
+        <div id="userEmpty" class="empty-state">
+          <div class="empty-icon">👤</div>
+          <div class="empty-title">No users added yet</div>
+          <div class="empty-sub">Use the form above to create the first account.</div>
+        </div>
+
+        <!-- Users table -->
+        <div class="table-wrap" id="userTableWrap" style="display:none;">
+          <table class="data-table" id="userTable">
+            <thead>
+              <tr><th>Username</th><th>Role</th><th>Status</th><th class="text-right">Actions</th></tr>
+            </thead>
+            <tbody id="userBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Role permissions -->
+      <div class="card">
+        <div class="card-title">Role Permissions</div>
+        <div class="card-subtitle">Overview of what each role can access</div>
+
+        <div class="role-box">
+          <div class="role-name">👑 Captain</div>
+          <p>Full system access — user management, all modules, system settings, backup &amp; export, and reports.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">📋 Secretary</div>
+          <p>Access to residents, facilities, institutions, and reports. Can add, edit, and delete records. Cannot manage users or backup.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">🩺 Health Worker</div>
+          <p>Access to residents module and health-related reports only. Can view and update health and disability information.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">💰 Treasurer</div>
+          <p>Access to reports and socio-economic data. Read-only access to resident records.</p>
+        </div>
+      </div>
+
+    </div><!-- end users tab -->
+
+
+    <!-- ====== BACKUP & EXPORT ====== -->
+    <div id="tab-backup" class="tab-panel" data-group="set">
+
+      <div class="card">
+        <div class="card-title">Backup &amp; Data Export</div>
+        <div class="card-subtitle">Create backups and export system data</div>
+
+        <!-- Create + Restore -->
+        <div class="two-col">
+          <div class="card" style="border:1.5px solid #eaf2f6; text-align:center;">
+            <div style="font-size:32px; margin-bottom:12px;">💾</div>
+            <div class="card-title" style="margin-bottom:6px;">Create Backup</div>
+            <div class="card-subtitle">Export all system data to a backup file</div>
+            <button class="btn btn-primary btn-full" onclick="createBackup()">
+              ⬇️ Create Backup
+            </button>
+          </div>
+          <div class="card" style="border:1.5px solid #eaf2f6; text-align:center;">
+            <div style="font-size:32px; margin-bottom:12px;">📦</div>
+            <div class="card-title" style="margin-bottom:6px;">Restore Backup</div>
+            <div class="card-subtitle">Import data from a previously saved backup file</div>
+            <label for="restoreFile" class="btn btn-outline btn-full" style="cursor:pointer; display:flex; justify-content:center;">
+              ⬆️ Import Backup
+            </label>
+            <input type="file" id="restoreFile" accept=".json,.zip" style="display:none;" onchange="restoreBackup(this)"/>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Export options -->
+        <p class="card-title" style="margin-bottom:14px;">Export Individual Datasets</p>
+        <div class="grid-3">
+          <button class="btn btn-outline" onclick="exportData('residents')">
+            ⬇️ Export Residents
+          </button>
+          <button class="btn btn-outline" onclick="exportData('facilities')">
+            ⬇️ Export Facilities
+          </button>
+          <button class="btn btn-outline" onclick="exportData('institutions')">
+            ⬇️ Export Institutions
+          </button>
+        </div>
+
+        <!-- Important notes -->
+        <div class="notes-box">
+          <div class="notes-title">⚠️ Important Notes</div>
+          <ul>
+            <li>Backups include all system data — residents, facilities, institutions, and settings.</li>
+            <li>Store backup files in a secure location and back up regularly.</li>
+            <li>Restoring a backup will permanently overwrite current data.</li>
+            <li>Only the <strong>Captain</strong> role can create and restore backups.</li>
+            <li>Individual exports are in CSV format compatible with Excel and Google Sheets.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div><!-- end backup tab -->
+
+  </div><!-- end page-content -->
+
+  <script src="app.js"></script>
+  <script>
+
+    /* ---- Barangay Profile ---- */
+    function saveProfile() {
+      showToast('Barangay profile saved!', 'success');
+      /* Django: POST to /settings/profile/save/ */
+    }
+    function saveBarangayInfo() {
+      const name = document.getElementById('bName').value.trim();
+      if (!name) { showToast('Please enter the barangay name.', 'error'); return; }
+      showToast('Barangay information saved!', 'success');
+      /* Django: POST to /settings/barangay/save/ */
+    }
+
+    /* ---- User Management ---- */
+    let userIdx = 0;
+
+    function toggleEmpty(bodyId, emptyId, wrapId) {
+      const count = document.getElementById(bodyId).querySelectorAll('tr').length;
+      document.getElementById(emptyId).style.display = count ? 'none' : '';
+      document.getElementById(wrapId).style.display  = count ? '' : 'none';
+    }
+
+    function addUser() {
+      const username = document.getElementById('uUsername').value.trim();
+      const password = document.getElementById('uPassword').value;
+      const role     = document.getElementById('uRole').value;
+
+      if (!username) { showToast('Please enter a username.', 'error'); return; }
+      if (password.length < 8) { showToast('Password must be at least 8 characters.', 'error'); return; }
+
+      const id = 'row-user-' + (++userIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${username}</td>
+        <td>${role}</td>
+        <td><span class="badge badge-green">Active</span></td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete"
+            onclick="showConfirm('Delete User','Delete user <strong>${username}</strong>? They will lose system access.',function(){
+              document.getElementById('${id}').remove();
+              toggleEmpty('userBody','userEmpty','userTableWrap');
+              showToast('${username} removed.','warning');
+            })">🗑️</button>
+        </div></td></tr>`;
+
+      document.getElementById('userBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('uUsername').value = '';
+      document.getElementById('uPassword').value = '';
+      toggleEmpty('userBody','userEmpty','userTableWrap');
+      showToast(`User "${username}" added as ${role}.`, 'success');
+      /* Django: POST to /settings/users/add/ with CSRF token */
+    }
+
+    /* ---- Backup & Export ---- */
+    function createBackup() {
+      showToast('Creating backup… please wait.', 'info');
+      setTimeout(function() {
+        showToast('Backup created and downloaded!', 'success');
+        /* Django: window.location.href = '/settings/backup/create/'; */
+      }, 1500);
+    }
+
+    function restoreBackup(input) {
+      if (!input.files.length) return;
+      const fileName = input.files[0].name;
+      showConfirm(
+        'Restore Backup',
+        `Restoring <strong>${fileName}</strong> will overwrite ALL current data. This cannot be undone. Continue?`,
+        function() {
+          showToast('Restoring backup…', 'info');
+          /* Django: POST file to /settings/backup/restore/ */
+        }
+      );
+    }
+
+    function exportData(type) {
+      showToast(`Exporting ${type} data…`, 'info');
+      /* Django: window.location.href = '/settings/export/' + type + '/'; */
+    }
+
+  </script>
+
+</body>
+</html>
 
  
 

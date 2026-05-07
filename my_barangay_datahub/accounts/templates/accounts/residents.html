@@ -2,7 +2,529 @@
 <!DOCTYPE html> 
 <html lang="en"> 
 <head> 
-  <meta charset="UTF-8" /> 
+  <meta charset=<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Residents</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <span class="topbar-badge">RESIDENTS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Residents</h1>
+      <p>Manage resident information and records</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="card">
+
+      <!-- Card header: count + search + add button -->
+      <div class="card-header">
+        <div>
+          <div class="card-title">Resident List</div>
+          <div style="font-size:12px; color:#7a9aaa; margin-top:3px;">
+            Total residents: <strong id="residentCount">0</strong>
+          </div>
+        </div>
+        <div class="flex gap-8 flex-wrap items-center">
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search residents..."
+                   oninput="filterTable('residentTable', this.value)"/>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addModal')">
+            ➕ Add Resident
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">No residents added yet</div>
+        <div class="empty-sub">Click <strong>+ Add Resident</strong> to start building the list.</div>
+      </div>
+
+      <!-- Resident table — hidden until there is data -->
+      <div class="table-wrap" id="tableWrap" style="display:none;">
+        <table class="data-table" id="residentTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Household</th>
+              <th>Livelihood</th>
+              <th>Disability</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="residentBody">
+            <!-- Django: {% for r in residents %} <tr>...</tr> {% endfor %} -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       ADD RESIDENT MODAL
+       Django: <form action="/residents/add/" method="POST">
+       ================================================ -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Add New Resident</h2>
+          <p>Enter the resident's information below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+      </div>
+
+      <!-- Required fields -->
+      <div class="form-row">
+        <label for="aName">Name</label>
+        <div class="form-field">
+          <input type="text" id="aName" placeholder="Full name" required/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aBdate">Birth Date</label>
+        <div class="form-field">
+          <input type="date" id="aBdate" required/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aGender">Gender</label>
+        <div class="form-field">
+          <select id="aGender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Optional fields -->
+      <div class="form-row">
+        <label for="aHousehold">Household <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aHousehold">
+            <option value="">None</option>
+            <option>HH-001</option><option>HH-002</option>
+            <option>HH-003</option><option>HH-004</option><option>HH-005</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aLivelihood">Livelihood <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aLivelihood">
+            <option value="">None</option>
+            <option>Farming</option><option>Teaching</option><option>Student</option>
+            <option>Construction</option><option>Small Business</option>
+            <option>Retail</option><option>Healthcare</option><option>Government</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aHmaterial">House Material <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aHmaterial">
+            <option value="">None</option>
+            <option>Concrete</option><option>Wood</option><option>Mixed</option><option>Light Material</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aHowner">House Ownership <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aHowner">
+            <option value="">None</option>
+            <option>Owned</option><option>Rented</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Disability</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aDisability"/> Has disability</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aLgbtq">LGBTQ Type <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aLgbtq">
+            <option value="">None</option>
+            <option>Gay</option><option>Lesbian</option>
+            <option>Bisexual</option><option>Transgender</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Labor Force</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aLabor"/> Is in labor force</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Unemployed</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aUnemployed"/> Is unemployed</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>OFW</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aOfw"/> Is OFW</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Solo Parent</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aSolo"/> Is solo parent</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Indigenous</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="aIndigenous"/> Is indigenous</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aCivil">Civil Status <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aCivil">
+            <option value="">None</option>
+            <option>Single</option><option>Married</option>
+            <option>Widowed</option><option>Separated</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="aCitizen">Citizenship <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="aCitizen">
+            <option value="Filipino">Filipino</option>
+            <option value="Foreigner">Foreigner</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('addModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="addResident()">Add Resident</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       EDIT RESIDENT MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Edit Resident</h2>
+          <p>Update the resident's information below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+      </div>
+
+      <input type="hidden" id="eRowIndex"/>
+
+      <div class="form-row">
+        <label for="eName">Name</label>
+        <div class="form-field"><input type="text" id="eName" placeholder="Full name" required/></div>
+      </div>
+      <div class="form-row">
+        <label for="eBdate">Birth Date</label>
+        <div class="form-field"><input type="date" id="eBdate" required/></div>
+      </div>
+      <div class="form-row">
+        <label for="eGender">Gender</label>
+        <div class="form-field">
+          <select id="eGender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eHousehold">Household <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eHousehold">
+            <option value="">None</option>
+            <option>HH-001</option><option>HH-002</option>
+            <option>HH-003</option><option>HH-004</option><option>HH-005</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eLivelihood">Livelihood <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eLivelihood">
+            <option value="">None</option>
+            <option>Farming</option><option>Teaching</option><option>Student</option>
+            <option>Construction</option><option>Small Business</option>
+            <option>Retail</option><option>Healthcare</option><option>Government</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eHmaterial">House Material <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eHmaterial">
+            <option value="">None</option>
+            <option>Concrete</option><option>Wood</option><option>Mixed</option><option>Light Material</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eHowner">House Ownership <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eHowner">
+            <option value="">None</option>
+            <option>Owned</option><option>Rented</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Disability</label>
+        <div class="form-field">
+          <label class="check-label"><input type="checkbox" id="eDisability"/> Has disability</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eLgbtq">LGBTQ Type <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eLgbtq">
+            <option value="">None</option>
+            <option>Gay</option><option>Lesbian</option>
+            <option>Bisexual</option><option>Transgender</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Labor Force</label>
+        <div class="form-field"><label class="check-label"><input type="checkbox" id="eLabor"/> Is in labor force</label></div>
+      </div>
+      <div class="form-row">
+        <label>Unemployed</label>
+        <div class="form-field"><label class="check-label"><input type="checkbox" id="eUnemployed"/> Is unemployed</label></div>
+      </div>
+      <div class="form-row">
+        <label>OFW</label>
+        <div class="form-field"><label class="check-label"><input type="checkbox" id="eOfw"/> Is OFW</label></div>
+      </div>
+      <div class="form-row">
+        <label>Solo Parent</label>
+        <div class="form-field"><label class="check-label"><input type="checkbox" id="eSolo"/> Is solo parent</label></div>
+      </div>
+      <div class="form-row">
+        <label>Indigenous</label>
+        <div class="form-field"><label class="check-label"><input type="checkbox" id="eIndigenous"/> Is indigenous</label></div>
+      </div>
+      <div class="form-row">
+        <label for="eCivil">Civil Status <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eCivil">
+            <option value="">None</option>
+            <option>Single</option><option>Married</option>
+            <option>Widowed</option><option>Separated</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="eCitizen">Citizenship <span class="opt">(Optional)</span></label>
+        <div class="form-field">
+          <select id="eCitizen">
+            <option value="Filipino">Filipino</option>
+            <option value="Foreigner">Foreigner</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="updateResident()">Update Resident</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="app.js"></script>
+  <script>
+    /* In-memory resident list (replaced by Django queryset in production) */
+    let residents = [];
+    let editIndex = -1;
+
+    /* Render the full table from the residents array */
+    function renderTable() {
+      const tbody = document.getElementById('residentBody');
+      const empty = document.getElementById('emptyState');
+      const wrap  = document.getElementById('tableWrap');
+
+      tbody.innerHTML = '';
+
+      if (residents.length === 0) {
+        empty.style.display = ''; wrap.style.display = 'none';
+        document.getElementById('residentCount').textContent = '0';
+        return;
+      }
+
+      empty.style.display = 'none'; wrap.style.display = '';
+      document.getElementById('residentCount').textContent = residents.length;
+
+      residents.forEach(function(r, i) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          `<td>${i + 1}</td>` +
+          `<td class="fw-700">${r.name}</td>` +
+          `<td>${r.age}</td>` +
+          `<td>${r.gender}</td>` +
+          `<td class="${r.household ? '' : 'na'}">${r.household || '—'}</td>` +
+          `<td class="${r.livelihood ? '' : 'na'}">${r.livelihood || '—'}</td>` +
+          `<td>${r.disability ? '<span class="badge badge-yellow">Yes</span>' : 'No'}</td>` +
+          `<td><div class="action-icons">
+             <button class="icon-btn icon-edit" onclick="openEdit(${i})" title="Edit">✏️</button>
+             <button class="icon-btn icon-delete" onclick="deleteResident(${i})" title="Delete">🗑️</button>
+           </div></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ADD */
+    function addResident() {
+      const name  = document.getElementById('aName').value.trim();
+      const bdate = document.getElementById('aBdate').value;
+      if (!name) { showToast('Please enter the resident\'s name.', 'error'); return; }
+      if (!bdate) { showToast('Please select a birth date.', 'error'); return; }
+
+      residents.push({
+        name:       name,
+        bdate:      bdate,
+        age:        calcAge(bdate),
+        gender:     document.getElementById('aGender').value,
+        household:  document.getElementById('aHousehold').value,
+        livelihood: document.getElementById('aLivelihood').value,
+        hmaterial:  document.getElementById('aHmaterial').value,
+        howner:     document.getElementById('aHowner').value,
+        disability: document.getElementById('aDisability').checked,
+        lgbtq:      document.getElementById('aLgbtq').value,
+        labor:      document.getElementById('aLabor').checked,
+        unemployed: document.getElementById('aUnemployed').checked,
+        ofw:        document.getElementById('aOfw').checked,
+        solo:       document.getElementById('aSolo').checked,
+        indigenous: document.getElementById('aIndigenous').checked,
+        civil:      document.getElementById('aCivil').value,
+        citizen:    document.getElementById('aCitizen').value,
+      });
+
+      /* Reset add form */
+      document.getElementById('aName').value = '';
+      document.getElementById('aBdate').value = '';
+      document.getElementById('aDisability').checked = false;
+      document.getElementById('aLabor').checked = false;
+
+      closeModal('addModal');
+      renderTable();
+      showToast(`${name} added successfully!`, 'success');
+      /* Django: POST to /residents/add/ with CSRF token */
+    }
+
+    /* OPEN EDIT */
+    function openEdit(i) {
+      editIndex = i;
+      const r = residents[i];
+      document.getElementById('eName').value      = r.name;
+      document.getElementById('eBdate').value     = r.bdate;
+      document.getElementById('eGender').value    = r.gender;
+      document.getElementById('eHousehold').value = r.household;
+      document.getElementById('eLivelihood').value= r.livelihood;
+      document.getElementById('eHmaterial').value = r.hmaterial;
+      document.getElementById('eHowner').value    = r.howner;
+      document.getElementById('eDisability').checked = r.disability;
+      document.getElementById('eLgbtq').value     = r.lgbtq;
+      document.getElementById('eLabor').checked   = r.labor;
+      document.getElementById('eUnemployed').checked = r.unemployed;
+      document.getElementById('eOfw').checked     = r.ofw;
+      document.getElementById('eSolo').checked    = r.solo;
+      document.getElementById('eIndigenous').checked = r.indigenous;
+      document.getElementById('eCivil').value     = r.civil;
+      document.getElementById('eCitizen').value   = r.citizen;
+      openModal('editModal');
+    }
+
+    /* UPDATE */
+    function updateResident() {
+      const name  = document.getElementById('eName').value.trim();
+      const bdate = document.getElementById('eBdate').value;
+      if (!name) { showToast('Please enter the resident\'s name.', 'error'); return; }
+
+      residents[editIndex] = {
+        name:       name,
+        bdate:      bdate,
+        age:        calcAge(bdate),
+        gender:     document.getElementById('eGender').value,
+        household:  document.getElementById('eHousehold').value,
+        livelihood: document.getElementById('eLivelihood').value,
+        hmaterial:  document.getElementById('eHmaterial').value,
+        howner:     document.getElementById('eHowner').value,
+        disability: document.getElementById('eDisability').checked,
+        lgbtq:      document.getElementById('eLgbtq').value,
+        labor:      document.getElementById('eLabor').checked,
+        unemployed: document.getElementById('eUnemployed').checked,
+        ofw:        document.getElementById('eOfw').checked,
+        solo:       document.getElementById('eSolo').checked,
+        indigenous: document.getElementById('eIndigenous').checked,
+        civil:      document.getElementById('eCivil').value,
+        citizen:    document.getElementById('eCitizen').value,
+      };
+
+      closeModal('editModal');
+      renderTable();
+      showToast(`${name} updated successfully!`, 'success');
+      /* Django: POST to /residents/edit/<id>/ with CSRF token */
+    }
+
+    /* DELETE */
+    function deleteResident(i) {
+      showConfirm(
+        'Delete Resident',
+        `Are you sure you want to delete <strong>${residents[i].name}</strong>? This cannot be undone.`,
+        function() {
+          const name = residents[i].name;
+          residents.splice(i, 1);
+          renderTable();
+          showToast(`${name} deleted.`, 'warning');
+          /* Django: POST to /residents/delete/<id>/ with CSRF token */
+        }
+      );
+    }
+
+    /* Initial render */
+    renderTable();
+  </script>
+
+</body>
+</html>
+"UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
   <title>Barangay DataHub — Residents</title> 
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />

@@ -1,0 +1,279 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Institutions</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <span class="topbar-badge">INSTITUTIONS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Institutions &amp; Human Resources</h1>
+      <p>Manage organizations and professionals</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('institutions',this,'inst')">Institutions</button>
+      <button class="tab-btn"        onclick="switchTab('medical',this,'inst')">Medical Staff</button>
+      <button class="tab-btn"        onclick="switchTab('professionals',this,'inst')">Other Professionals</button>
+    </div>
+
+
+    <!-- ====== INSTITUTIONS ====== -->
+    <div id="tab-institutions" class="tab-panel active" data-group="inst">
+      <div class="card">
+        <div class="card-title">Institutions &amp; Sectors</div>
+        <div class="card-subtitle">Community organizations and groups</div>
+
+        <!-- Add form -->
+        <div class="card" style="border:1.5px solid #eaf2f6; padding:18px; margin-bottom:18px;">
+          <div class="two-col" style="margin-bottom:12px;">
+            <div>
+              <label>Organization Name</label>
+              <input type="text" id="iOrgName" placeholder="e.g., Women's Association"/>
+            </div>
+            <div>
+              <label>President / Head</label>
+              <input type="text" id="iPresident" placeholder="Full name"/>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label>Members</label>
+              <input type="number" id="iMembers" placeholder="0" min="0"/>
+            </div>
+            <div>
+              <label>Status</label>
+              <select id="iStatus">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div>
+              <label>Programs</label>
+              <input type="text" id="iPrograms" placeholder="e.g., Health, Education"/>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="addInstitution()">➕ Add Institution</button>
+        </div>
+
+        <!-- Empty state -->
+        <div id="instEmpty" class="empty-state">
+          <div class="empty-icon">🏢</div>
+          <div class="empty-title">No institutions added yet</div>
+          <div class="empty-sub">Use the form above to add one.</div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap" id="instTableWrap" style="display:none;">
+          <table class="data-table" id="instTable">
+            <thead>
+              <tr>
+                <th>Organization</th><th>Members</th><th>President</th>
+                <th>Status</th><th>Programs</th><th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="instBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end institutions tab -->
+
+
+    <!-- ====== MEDICAL STAFF ====== -->
+    <div id="tab-medical" class="tab-panel" data-group="inst">
+      <div class="card">
+        <div class="card-title">Medical &amp; Healthcare Staff</div>
+        <div class="card-subtitle">Health workers, nurses, and midwives</div>
+        <div class="inline-form">
+          <div class="inline-form-group">
+            <label>Full Name</label>
+            <input type="text" id="medName" placeholder="Dr. / Nurse / Midwife name"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Position</label>
+            <select id="medPosition">
+              <option>Doctor</option><option>Health Worker</option>
+              <option>Nurse</option><option>Midwife</option><option>Dentist</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="medContact" placeholder="09XX XXX XXXX"/>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addMedical()">➕ Add</button>
+        </div>
+
+        <div id="medEmpty" class="empty-state">
+          <div class="empty-icon">🩺</div>
+          <div class="empty-title">No medical staff added yet</div>
+          <div class="empty-sub">Use the form above to add one.</div>
+        </div>
+        <div class="table-wrap" id="medTableWrap" style="display:none;">
+          <table class="data-table" id="medTable">
+            <thead><tr><th>Name</th><th>Position</th><th>Contact</th><th class="text-right">Actions</th></tr></thead>
+            <tbody id="medBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end medical tab -->
+
+
+    <!-- ====== OTHER PROFESSIONALS ====== -->
+    <div id="tab-professionals" class="tab-panel" data-group="inst">
+      <div class="card">
+        <div class="card-title">Other Professionals</div>
+        <div class="card-subtitle">Teachers, carpenters, electricians, and other skilled workers</div>
+        <div class="inline-form">
+          <div class="inline-form-group">
+            <label>Full Name</label>
+            <input type="text" id="proName" placeholder="Full name"/>
+          </div>
+          <div class="inline-form-group">
+            <label>Profession</label>
+            <select id="proProfession">
+              <option>Teacher</option><option>Carpenter</option>
+              <option>Electrician</option><option>Plumber</option>
+              <option>Engineer</option><option>Mechanic</option><option>Farmer</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="proContact" placeholder="09XX XXX XXXX"/>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addProfessional()">➕ Add</button>
+        </div>
+
+        <div id="proEmpty" class="empty-state">
+          <div class="empty-icon">🔧</div>
+          <div class="empty-title">No professionals added yet</div>
+          <div class="empty-sub">Use the form above to add one.</div>
+        </div>
+        <div class="table-wrap" id="proTableWrap" style="display:none;">
+          <table class="data-table" id="proTable">
+            <thead><tr><th>Name</th><th>Profession</th><th>Contact</th><th class="text-right">Actions</th></tr></thead>
+            <tbody id="proBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- end professionals tab -->
+
+  </div><!-- end page-content -->
+
+  <script src="app.js"></script>
+  <script>
+
+    /* ---- Generic empty state toggle ---- */
+    function toggleEmpty(bodyId, emptyId, wrapId) {
+      const count = document.getElementById(bodyId).querySelectorAll('tr').length;
+      document.getElementById(emptyId).style.display = count ? 'none' : '';
+      document.getElementById(wrapId).style.display  = count ? '' : 'none';
+    }
+
+    /* ---- Row ID counters ---- */
+    let instIdx=0, medIdx=0, proIdx=0;
+
+    /* ---- INSTITUTIONS ---- */
+    function addInstitution() {
+      const name     = document.getElementById('iOrgName').value.trim();
+      const president= document.getElementById('iPresident').value.trim();
+      const members  = document.getElementById('iMembers').value || '0';
+      const status   = document.getElementById('iStatus').value;
+      const programs = document.getElementById('iPrograms').value.trim();
+
+      if (!name) { showToast('Please enter the organization name.', 'error'); return; }
+
+      const id    = 'row-inst-' + (++instIdx);
+      const badge = status === 'Active' ? 'badge-green' : 'badge-gray';
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td>
+        <td>${members}</td>
+        <td>${president || '<span class="na">—</span>'}</td>
+        <td><span class="badge ${badge}">${status}</span></td>
+        <td>${programs || '<span class="na">—</span>'}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete"
+            onclick="document.getElementById('${id}').remove();
+                     toggleEmpty('instBody','instEmpty','instTableWrap');
+                     showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+
+      document.getElementById('instBody').insertAdjacentHTML('beforeend', tr);
+
+      /* Reset */
+      ['iOrgName','iPresident','iMembers','iPrograms'].forEach(id => document.getElementById(id).value = '');
+
+      toggleEmpty('instBody','instEmpty','instTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- MEDICAL STAFF ---- */
+    function addMedical() {
+      const name     = document.getElementById('medName').value.trim();
+      const position = document.getElementById('medPosition').value;
+      const contact  = document.getElementById('medContact').value.trim();
+
+      if (!name) { showToast('Please enter a name.', 'error'); return; }
+
+      const id = 'row-med-' + (++medIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${position}</td>
+        <td>${contact || '<span class="na">—</span>'}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete"
+            onclick="document.getElementById('${id}').remove();
+                     toggleEmpty('medBody','medEmpty','medTableWrap');
+                     showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+
+      document.getElementById('medBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('medName').value    = '';
+      document.getElementById('medContact').value = '';
+      toggleEmpty('medBody','medEmpty','medTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+    /* ---- OTHER PROFESSIONALS ---- */
+    function addProfessional() {
+      const name       = document.getElementById('proName').value.trim();
+      const profession = document.getElementById('proProfession').value;
+      const contact    = document.getElementById('proContact').value.trim();
+
+      if (!name) { showToast('Please enter a name.', 'error'); return; }
+
+      const id = 'row-pro-' + (++proIdx);
+      const tr = `<tr id="${id}">
+        <td class="fw-700">${name}</td><td>${profession}</td>
+        <td>${contact || '<span class="na">—</span>'}</td>
+        <td><div class="action-icons">
+          <button class="icon-btn icon-delete"
+            onclick="document.getElementById('${id}').remove();
+                     toggleEmpty('proBody','proEmpty','proTableWrap');
+                     showToast('${name} deleted.','warning')">🗑️</button>
+        </div></td></tr>`;
+
+      document.getElementById('proBody').insertAdjacentHTML('beforeend', tr);
+      document.getElementById('proName').value    = '';
+      document.getElementById('proContact').value = '';
+      toggleEmpty('proBody','proEmpty','proTableWrap');
+      showToast(`${name} added.`, 'success');
+    }
+
+  </script>
+
+</body>
+</html>
