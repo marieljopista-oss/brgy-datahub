@@ -28,19 +28,12 @@ def get_Settings():
         )
     return s
 
-@login_required(login_url='login') # Add the login_url here
-def home(request):
-    settings = get_Settings()
-    return render(request, 'accounts/settings.html', {'settings': settings})
 
 # ============================================================
 # LOGIN
 # ============================================================
 
-def login(request):
-   from django.contrib.auth import authenticate, login as auth_login
-
-def login(request):
+def login_view(request):
     # If the user is already logged in, send them to home
     if request.user.is_authenticated:
         return redirect('home')
