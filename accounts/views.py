@@ -1,241 +1,266 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Settings, User, Household, Resident, Facility, Institution, MedicalStaff, OtherProfessional
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponse
+from django.db.models import Count, Q
+from datetime import date
+import json, csv
 
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
-
-def get_user(request):
-    uid = request.session.get('user_id')
-    if uid:
-        try:
-            return User.objects.get(id=uid)
-        except User.DoesNotExist:
-            pass
-    return None
-
-def get_Settings():
-    s = Settings.objects.first()
-    if not s:
-        s = Settings.objects.create(
-            barangay_name='Cogon',
-            vision='A progressive and resilient Barangay Cogon with empowered communities.',
-            mission='To provide excellent public service and promote sustainable development for all residents.',
-            goals='Improve infrastructure, enhance health services, promote education, and ensure disaster preparedness.',
-        )
-    return s
+from .models import (
+    User, BarangayProfile,
+    Household, Resident,
+    LandBody, WaterBody, Utility, Building, Facility, RoadNetwork,
+    Institution, MedicalStaff, Professional,
+)
 
 
-# ============================================================
-# LOGIN
-# ============================================================
+# ─────────────────────────────────────────
+#  HELPERS
+# ─────────────────────────────────────────
+
+def _age_group(birth_date):
+    """Return the age-group label for a resident."""
+    today = date.today()
+    months = (today.year - birth_date.year) * 12 + (today.month - birth_date.month)
+    years  = (today - birth_date).days // 365
+
+    if months < 7:   return '0 – 6 months'
+    if months < 36:  return '7 months – 2 years old'
+    if years  < 6:   return '3 – 5 years old'
+    if years  < 13:  return '6 – 12 years old'
+    if years  < 18:  return '13 – 17 years old'
+    if years  < 60:  return '18 – 59 years old'
+    return '60 years old and above'
+
+
+AGE_GROUP_ORDER = [
+    '0 – 6 months',
+    '7 months – 2 years old',
+    '3 – 5 years old',
+    '6 – 12 years old',
+    '13 – 17 years old',
+    '18 – 59 years old',
+    '60 years old and above',
+]
+
+
+# ─────────────────────────────────────────
+#  AUTH
+# ─────────────────────────────────────────
 
 def login_view(request):
-    # If the user is already logged in, send them to home
     if request.user.is_authenticated:
         return redirect('home')
-    
-    error = ''
+
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
-        password = request.POST.get('password', '').strip()
+        password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            auth_login(request, user)
+        if user:
+            login(request, user)
             return redirect('home')
-        else:
-            error = 'Invalid username or password.'
-    return render(request, 'accounts/login.html', {'error': error})
+        messages.error(request, 'Invalid username or password.')
+
+    return render(request, 'login.html', {'show_error': bool(messages.get_messages(request))})
 
 
-def logout_view(request):
-    request.session.flush()
+def signup_view(request):
+    if request.method == 'POST':
+        first    = request.POST.get('first_name', '').strip()
+        last     = request.POST.get('last_name',  '').strip()
+        role     = request.POST.get('role',       '').strip()
+        username = request.POST.get('username',   '').strip()
+        email    = request.POST.get('email',      '').strip()
+        contact  = request.POST.get('contact',    '').strip()
+        password = request.POST.get('password',   '')
+        confirm  = request.POST.get('confirm_password', '')
+
+        # Basic validation
+        if not all([first, last, role, username, email, password, confirm]):
+            messages.error(request, 'Please fill in all required fields.')
+            return redirect('login')
+
+        if password != confirm:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('login')
+
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+            return redirect('login')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already taken.')
+            return redirect('login')
+
+        User.objects.create_user(
+            username=username, password=password,
+            first_name=first, last_name=last,
+            email=email, role=role, contact=contact,
+        )
+        messages.success(request, 'Account created! You can now log in.')
+        return redirect('login')
+
     return redirect('login')
 
 
-# ============================================================
-# MENU  (f3)
-# ============================================================
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
+# ─────────────────────────────────────────
+#  HOME
+# ─────────────────────────────────────────
 
 @login_required
-def home(request):
-    user     = get_user(request)
-    settings = get_Settings()
-    return render(request, 'accounts/home.html', {'user': user, 'settings': settings})
+def home_view(request):
+    return render(request, 'home.html')
+
+
+# ─────────────────────────────────────────
+#  DASHBOARD
+# ─────────────────────────────────────────
 
 @login_required
-def profile(request):
-    user = get_user(request)
-    settings = get_Settings()
-    return render(request, 'accounts/profile.html', {
-        'user': user, 
-        'settings': settings
-    })
-# ============================================================
-# DASHBOARD  (f4)
-# ============================================================
+def dashboard_view(request):
+    residents = Resident.objects.select_related('household').all()
 
-@login_required
-def dashboard(request):
-    user      = get_user(request)
-    settings  = get_Settings()
-    residents = Resident.objects.all()
-    households = Household.objects.all()
+    total       = residents.count()
+    male_count  = residents.filter(gender='Male').count()
+    female_count= residents.filter(gender='Female').count()
 
-    total_pop    = residents.count()
-    total_male   = residents.filter(gender='Male').count()
-    total_female = residents.filter(gender='Female').count()
-    total_hh     = households.count()
-    owned_hh     = households.filter(ownership_status='Owned').count()
-    rented_hh    = households.filter(ownership_status='Rented').count()
+    households     = Household.objects.all()
+    owned_count    = households.filter(ownership='Owned').count()
+    rented_count   = households.filter(ownership='Rented').count()
+
+    livelihood_count = residents.exclude(livelihood='').values('livelihood').distinct().count()
+    infra_count      = Building.objects.count() + Facility.objects.count()
 
     # Livelihood distribution
-    livelihoods = {}
-    for r in residents:
-        l = r.livelihood.strip() if r.livelihood else 'None'
-        livelihoods[l] = livelihoods.get(l, 0) + 1
-    livelihoods_sorted = sorted(livelihoods.items(), key=lambda x: -x[1])
+    livelihood_data = (
+        residents.exclude(livelihood='')
+        .values('livelihood')
+        .annotate(count=Count('id'))
+        .order_by('-count')[:10]
+    )
 
     # House materials
-    house_materials = {}
-    for h in households:
-        m = h.house_material
-        house_materials[m] = house_materials.get(m, 0) + 1
-
-    # Infrastructure count
-    infra_count = (
-        Facility.objects.filter(category='Building').count() +
-        Facility.objects.filter(category='Facility').count()
+    material_data = (
+        households.exclude(house_material='')
+        .values('house_material')
+        .annotate(count=Count('id'))
+        .order_by('-count')
     )
-    livelihood_types = len(livelihoods)
 
-    # Age groups with disability
+    # Age groups with disability status
+    age_group_data = {g: {'without': 0, 'with': 0} for g in AGE_GROUP_ORDER}
+    for r in residents:
+        grp = _age_group(r.birth_date)
+        key = 'with' if r.has_disability else 'without'
+        age_group_data[grp][key] += 1
+
     age_groups = [
-        ('0-6 months',          residents.filter(age=0)),
-        ('7 months - 2 years',  residents.filter(age__gte=0, age__lte=2).exclude(age=0)),
-        ('3-5 years old',       residents.filter(age__gte=3, age__lte=5)),
-        ('6-12 years old',      residents.filter(age__gte=6, age__lte=12)),
-        ('13-17 years old',     residents.filter(age__gte=13, age__lte=17)),
-        ('18-59 years old',     residents.filter(age__gte=18, age__lte=59)),
-        ('60 years and above',  residents.filter(age__gte=60)),
-    ]
-    age_group_data = []
-    for label, qs in age_groups:
-        total   = qs.count()
-        with_d  = qs.filter(disability=True).count()
-        without = total - with_d
-        age_group_data.append((label, total, with_d, without))
-
-    # LGBTQ
-    lgbtq_total = residents.exclude(lgbtq_type='').count()
-    lgbtq_gay   = residents.filter(lgbtq_type__iexact='Gay').count()
-    lgbtq_les   = residents.filter(lgbtq_type__iexact='Lesbian').count()
-
-    # Population by sector
-    sectors = [
-        ('Labor Force',             residents.filter(is_labor_force= True).count()),
-        ('Unemployed',              residents.filter(is_unemployed= True).count()),
-        ('Out of School Children',  residents.filter(is_osc= True).count()),
-        ('Out of School Youth',     residents.filter(is_osy= True).count()),
-        ('Persons with Disability', residents.filter(disability= True).count()),
-        ('Overseas Filipino Workers', residents.filter(is_ofw= True).count()),
-        ('Solo Parents',            residents.filter(is_solo_parent= True).count()),
-        ('Indigenous People',       residents.filter(is_indigenous= True).count()),
+        {
+            'label':    g,
+            'without':  age_group_data[g]['without'],
+            'with':     age_group_data[g]['with'],
+            'total':    age_group_data[g]['without'] + age_group_data[g]['with'],
+        }
+        for g in AGE_GROUP_ORDER
     ]
 
-    # Civil status
-    civil_data = [
-        ('Married',   residents.filter(civil_status='Married').count()),
-        ('Single',    residents.filter(civil_status='Single').count()),
-        ('Widowed',   residents.filter(civil_status='Widowed').count()),
-        ('Separated', residents.filter(civil_status='Separated').count()),
-    ]
+    # Sector counts
+    sectors = {
+        'labor_force':  residents.filter(in_labor_force=True).count(),
+        'unemployed':   residents.filter(is_unemployed=True).count(),
+        'osc':          residents.filter(
+                            birth_date__lte=date.today().replace(year=date.today().year - 6),
+                            birth_date__gte=date.today().replace(year=date.today().year - 14),
+                        ).count(),
+        'osy':          residents.filter(
+                            birth_date__lte=date.today().replace(year=date.today().year - 15),
+                            birth_date__gte=date.today().replace(year=date.today().year - 24),
+                        ).count(),
+        'pwds':         residents.filter(has_disability=True).count(),
+        'ofw':          residents.filter(is_ofw=True).count(),
+        'solo_parent':  residents.filter(is_solo_parent=True).count(),
+        'indigenous':   residents.filter(is_indigenous=True).count(),
+    }
 
-    # Citizenship
-    citizenship_data = [
-        ('Filipino', residents.filter(citizenship='Filipino').count()),
-        ('Foreign',  residents.filter(citizenship='Foreign').count()),
-    ]
+    # Civil status & citizenship
+    civil = {s: residents.filter(civil_status=s).count() for s in ['Married','Single','Widowed','Separated']}
+    citizenship = {c: residents.filter(citizenship=c).count() for c in ['Filipino','Foreigner']}
+
+    # LGBTQ+
+    lgbtq_data = (
+        residents.exclude(lgbtq_type='')
+        .values('lgbtq_type')
+        .annotate(count=Count('id'))
+    )
+
+    barangay = BarangayProfile.objects.first()
 
     context = {
-        'user':              user,
-        'settings':          settings,
-        'total_pop':         total_pop,
-        'total_male':        total_male,
-        'total_female':      total_female,
-        'total_hh':          total_hh,
-        'owned_hh':          owned_hh,
-        'rented_hh':         rented_hh,
-        'livelihood_types':  livelihood_types,
-        'infra_count':       infra_count,
-        'livelihoods':       livelihoods_sorted,
-        'house_materials':   house_materials.items(),
-        'age_group_data':    age_group_data,
-        'lgbtq_total':       lgbtq_total,
-        'lgbtq_gay':         lgbtq_gay,
-        'lgbtq_les':         lgbtq_les,
-        'sectors':           sectors,
-        'civil_data':        civil_data,
-        'citizenship_data':  citizenship_data,
+        'barangay':        barangay,
+        'stats': {
+            'total_population': total,
+            'male':             male_count,
+            'female':           female_count,
+            'households':       households.count(),
+            'owned':            owned_count,
+            'rented':           rented_count,
+            'livelihood_types': livelihood_count,
+            'infrastructure':   infra_count,
+        },
+        'livelihood_data': livelihood_data,
+        'material_data':   material_data,
+        'age_groups':      age_groups,
+        'total_no_dis':    sum(g['without'] for g in age_groups),
+        'total_with_dis':  sum(g['with']    for g in age_groups),
+        'sectors':         sectors,
+        'civil':           civil,
+        'citizenship':     citizenship,
+        'lgbtq_data':      lgbtq_data,
     }
-    return render(request, 'accounts/dashboard.html', context)
+    return render(request, 'dashboard.html', context)
 
 
-# ============================================================
-# RESIDENTS  (f5)
-# ============================================================
+# ─────────────────────────────────────────
+#  RESIDENTS
+# ─────────────────────────────────────────
 
 @login_required
-def residents(request):
-    user       = get_user(request)
-    settings   = get_Settings()
-    search     = request.GET.get('search', '')
-    residents  = Resident.objects.all().order_by('id')
-    if search:
-        residents = residents.filter(full_name__icontains=search)
+def residents_view(request):
+    residents  = Resident.objects.select_related('household').order_by('last_name', 'first_name')
     households = Household.objects.all()
-    context = {
-        'user':       user,
-        'settings':   settings,
-        'residents':  residents,
-        'households': households,
-        'search':     search,
-        'total':      Resident.objects.count(),
-    }
-    return render(request, 'accounts/residents.html', context)
+    return render(request, 'residents.html', {'residents': residents, 'households': households})
 
 
 @login_required
 def resident_add(request):
     if request.method == 'POST':
-        settings = get_Settings()
-        hh_id    = request.POST.get('household_id', '').strip()
-        hh       = Household.objects.filter(household_id=hh_id).first() if hh_id else None
+        hh_id = request.POST.get('household')
+        household = Household.objects.filter(pk=hh_id).first() if hh_id else None
+
         Resident.objects.create(
-            settings         = settings,
-            household        = hh,
-            full_name        = request.POST.get('full_name', ''),
-            birth_date       = request.POST.get('birth_date') or None,
-            age              = int(request.POST.get('age', 0)),
-            gender           = request.POST.get('gender', 'Male'),
-            civil_status     = request.POST.get('civil_status', 'Single'),
-            livelihood       = request.POST.get('livelihood', ''),
-            disability       = request.POST.get('disability', 'No'),
-            lgbtq_type       = request.POST.get('lgbtq_type', ''),
-            citizenship      = request.POST.get('citizenship', 'Filipino'),
-            sector           = request.POST.get('sector', ''),
-            is_osc           = request.POST.get('is_osc', 'No'),
-            is_osy           = request.POST.get('is_osy', 'No'),
-            is_labor_force   = request.POST.get('is_labor_force', 'No'),
-            is_unemployed    = request.POST.get('is_unemployed', 'No'),
-            is_ofw           = request.POST.get('is_ofw', 'No'),
-            is_solo_parent   = request.POST.get('is_solo_parent', 'No'),
-            is_indigenous    = request.POST.get('is_indigenous', 'No'),
+            first_name    = request.POST.get('first_name', '').strip(),
+            last_name     = request.POST.get('last_name',  '').strip(),
+            birth_date    = request.POST.get('birth_date'),
+            gender        = request.POST.get('gender', 'Male'),
+            household     = household,
+            livelihood    = request.POST.get('livelihood',  ''),
+            civil_status  = request.POST.get('civil_status',''),
+            citizenship   = request.POST.get('citizenship', 'Filipino'),
+            lgbtq_type    = request.POST.get('lgbtq_type',  ''),
+            has_disability= request.POST.get('has_disability') == 'on',
+            in_labor_force= request.POST.get('in_labor_force') == 'on',
+            is_unemployed = request.POST.get('is_unemployed')  == 'on',
+            is_ofw        = request.POST.get('is_ofw')         == 'on',
+            is_solo_parent= request.POST.get('is_solo_parent') == 'on',
+            is_indigenous = request.POST.get('is_indigenous')  == 'on',
         )
+        messages.success(request, 'Resident added successfully.')
     return redirect('residents')
 
 
@@ -243,27 +268,24 @@ def resident_add(request):
 def resident_edit(request, pk):
     r = get_object_or_404(Resident, pk=pk)
     if request.method == 'POST':
-        hh_id = request.POST.get('household_id', '').strip()
-        hh    = Household.objects.filter(household_id=hh_id).first() if hh_id else None
-        r.household      = hh
-        r.full_name      = request.POST.get('full_name', r.full_name)
-        r.birth_date     = request.POST.get('birth_date') or None
-        r.age            = int(request.POST.get('age', r.age))
-        r.gender         = request.POST.get('gender', r.gender)
-        r.civil_status   = request.POST.get('civil_status', r.civil_status)
-        r.livelihood     = request.POST.get('livelihood', r.livelihood)
-        r.disability     = request.POST.get('disability', r.disability)
-        r.lgbtq_type     = request.POST.get('lgbtq_type', r.lgbtq_type)
-        r.citizenship    = request.POST.get('citizenship', r.citizenship)
-        r.sector         = request.POST.get('sector', r.sector)
-        r.is_osc         = request.POST.get('is_osc', r.is_osc)
-        r.is_osy         = request.POST.get('is_osy', r.is_osy)
-        r.is_labor_force = request.POST.get('is_labor_force', r.is_labor_force)
-        r.is_unemployed  = request.POST.get('is_unemployed', r.is_unemployed)
-        r.is_ofw         = request.POST.get('is_ofw', r.is_ofw)
-        r.is_solo_parent = request.POST.get('is_solo_parent', r.is_solo_parent)
-        r.is_indigenous  = request.POST.get('is_indigenous', r.is_indigenous)
+        hh_id = request.POST.get('household')
+        r.first_name     = request.POST.get('first_name', '').strip()
+        r.last_name      = request.POST.get('last_name',  '').strip()
+        r.birth_date     = request.POST.get('birth_date')
+        r.gender         = request.POST.get('gender', 'Male')
+        r.household      = Household.objects.filter(pk=hh_id).first() if hh_id else None
+        r.livelihood     = request.POST.get('livelihood',  '')
+        r.civil_status   = request.POST.get('civil_status','')
+        r.citizenship    = request.POST.get('citizenship', 'Filipino')
+        r.lgbtq_type     = request.POST.get('lgbtq_type',  '')
+        r.has_disability = request.POST.get('has_disability') == 'on'
+        r.in_labor_force = request.POST.get('in_labor_force') == 'on'
+        r.is_unemployed  = request.POST.get('is_unemployed')  == 'on'
+        r.is_ofw         = request.POST.get('is_ofw')         == 'on'
+        r.is_solo_parent = request.POST.get('is_solo_parent') == 'on'
+        r.is_indigenous  = request.POST.get('is_indigenous')  == 'on'
         r.save()
+        messages.success(request, f'{r.full_name} updated.')
     return redirect('residents')
 
 
@@ -272,309 +294,332 @@ def resident_delete(request, pk):
     r = get_object_or_404(Resident, pk=pk)
     if request.method == 'POST':
         r.delete()
+        messages.success(request, 'Resident deleted.')
     return redirect('residents')
 
 
-# ============================================================
-# FACILITIES  (f6, f7, f8, f9, f10)
-# ============================================================
+# ─────────────────────────────────────────
+#  FACILITIES
+# ─────────────────────────────────────────
 
 @login_required
-def facilities(request):
-    user     = get_user(request)
-    settings = get_Settings()
-    tab      = request.GET.get('tab', 'land')
+def facilities_view(request):
     context = {
-        'user':       user,
-        'settings':   settings,
-        'tab':        tab,
-        'lands':      Facility.objects.filter(category='Land'),
-        'waters':     Facility.objects.filter(category='Water'),
-        'utilities':  Facility.objects.filter(category='Utility'),
-        'buildings':  Facility.objects.filter(category='Building'),
-        'facilities': Facility.objects.filter(category='Facility'),
-        'roads':      Facility.objects.filter(category='Road'),
+        'land_bodies':  LandBody.objects.all(),
+        'water_bodies': WaterBody.objects.all(),
+        'utility':      Utility.objects.first(),
+        'buildings':    Building.objects.all(),
+        'facilities':   Facility.objects.all(),
+        'roads':        RoadNetwork.objects.all(),
     }
-    return render(request, 'accounts/facilities.html', context)
+    return render(request, 'facilities.html', context)
 
 
 @login_required
-def facility_add(request):
+def facility_add(request, ftype):
+    """Generic add for land/water/building/facility/road."""
     if request.method == 'POST':
-        settings = get_Settings()
-        tab      = request.POST.get('tab', 'land')
-        Facility.objects.create(
-            settings           = settings,
-            category           = request.POST.get('category', ''),
-            name               = request.POST.get('name', ''),
-            type               = request.POST.get('type', ''),
-            area               = request.POST.get('area') or None,
-            description        = request.POST.get('description', ''),
-            status             = request.POST.get('status', ''),
-            quantity           = request.POST.get('quantity') or None,
-            length_km          = request.POST.get('length_km') or None,
-            maintenance_status = request.POST.get('maintenance_status', ''),
-        )
-        return redirect('/facilities/?tab=' + tab)
+        if ftype == 'land':
+            LandBody.objects.create(
+                name=request.POST['name'],
+                land_type=request.POST['land_type'],
+                area_ha=request.POST.get('area_ha') or None,
+            )
+        elif ftype == 'water':
+            WaterBody.objects.create(
+                name=request.POST['name'],
+                water_type=request.POST['water_type'],
+                description=request.POST.get('description',''),
+            )
+        elif ftype == 'building':
+            Building.objects.create(
+                name=request.POST['name'],
+                building_type=request.POST['building_type'],
+                status=request.POST.get('status','Operational'),
+            )
+        elif ftype == 'facility':
+            Facility.objects.create(
+                name=request.POST['name'],
+                facility_type=request.POST['facility_type'],
+                quantity=request.POST.get('quantity', 1),
+            )
+        elif ftype == 'road':
+            RoadNetwork.objects.create(
+                road_type=request.POST['road_type'],
+                length_km=request.POST['length_km'],
+                status=request.POST.get('status','Good'),
+            )
+        elif ftype == 'utility':
+            util, _ = Utility.objects.get_or_create(pk=1)
+            util.electricity      = request.POST.get('electricity',      'Available')
+            util.water_supply     = request.POST.get('water_supply',     'Available')
+            util.waste_management = request.POST.get('waste_management', 'Available')
+            util.toilet_count     = request.POST.get('toilet_count', 0)
+            util.bath_count       = request.POST.get('bath_count',   0)
+            util.save()
+        messages.success(request, 'Record saved.')
     return redirect('facilities')
 
 
 @login_required
-def facility_delete(request, pk):
-    f   = get_object_or_404(Facility, pk=pk)
-    tab = request.POST.get('tab', 'land')
-    if request.method == 'POST':
-        f.delete()
-    return redirect('/facilities/?tab=' + tab)
-
-
-# ============================================================
-# INSTITUTIONS  (f11, f12, f13)
-# ============================================================
-
-@login_required
-def institution(request):
-    user     = get_user(request)
-    settings = get_Settings()
-    tab      = request.GET.get('tab', 'institutions')
-    context = {
-        'user':          user,
-        'settings':      settings,
-        'tab':           tab,
-        'institutions':  Institution.objects.all(),
-        'medical':       MedicalStaff.objects.all(),
-        'professionals': OtherProfessional.objects.all(),
+def facility_delete(request, ftype, pk):
+    model_map = {
+        'land':     LandBody,
+        'water':    WaterBody,
+        'building': Building,
+        'facility': Facility,
+        'road':     RoadNetwork,
     }
-    return render(request, 'accounts/institution.html', context)
+    model = model_map.get(ftype)
+    if model and request.method == 'POST':
+        get_object_or_404(model, pk=pk).delete()
+        messages.success(request, 'Record deleted.')
+    return redirect('facilities')
+
+
+# ─────────────────────────────────────────
+#  INSTITUTIONS
+# ─────────────────────────────────────────
+
+@login_required
+def institutions_view(request):
+    context = {
+        'institutions': Institution.objects.all(),
+        'medical_staff': MedicalStaff.objects.all(),
+        'professionals': Professional.objects.all(),
+    }
+    return render(request, 'institutions.html', context)
 
 
 @login_required
-def institution_add(request):
+def institution_add(request, itype):
     if request.method == 'POST':
-        settings = get_Settings()
-        Institution.objects.create(
-            settings  = settings,
-            name      = request.POST.get('name', ''),
-            president = request.POST.get('president', ''),
-            members   = int(request.POST.get('members', 0)),
-            status    = request.POST.get('status', 'Active'),
-            programs  = request.POST.get('programs', ''),
-        )
-    return redirect('/institutions/?tab=institutions')
+        if itype == 'institution':
+            Institution.objects.create(
+                name     = request.POST['name'],
+                president= request.POST.get('president',''),
+                members  = request.POST.get('members', 0),
+                status   = request.POST.get('status','Active'),
+                programs = request.POST.get('programs',''),
+            )
+        elif itype == 'medical':
+            MedicalStaff.objects.create(
+                full_name= request.POST['full_name'],
+                position = request.POST['position'],
+                contact  = request.POST.get('contact',''),
+            )
+        elif itype == 'professional':
+            Professional.objects.create(
+                full_name = request.POST['full_name'],
+                profession= request.POST['profession'],
+                contact   = request.POST.get('contact',''),
+            )
+        messages.success(request, 'Record added.')
+    return redirect('institutions')
 
 
 @login_required
-def institution_delete(request, pk):
-    i = get_object_or_404(Institution, pk=pk)
-    if request.method == 'POST':
-        i.delete()
-    return redirect('/institutions/?tab=institutions')
+def institution_delete(request, itype, pk):
+    model_map = {
+        'institution': Institution,
+        'medical':     MedicalStaff,
+        'professional':Professional,
+    }
+    model = model_map.get(itype)
+    if model and request.method == 'POST':
+        get_object_or_404(model, pk=pk).delete()
+        messages.success(request, 'Record deleted.')
+    return redirect('institutions')
 
 
-@login_required
-def medstaff_add(request):
-    if request.method == 'POST':
-        settings = get_Settings()
-        MedicalStaff.objects.create(
-            settings       = settings,
-            name           = request.POST.get('name', ''),
-            position       = request.POST.get('position', 'Health Worker'),
-            contact_number = request.POST.get('contact_number', ''),
-        )
-    return redirect('/institutions/?tab=medical')
-
+# ─────────────────────────────────────────
+#  REPORTS
+# ─────────────────────────────────────────
 
 @login_required
-def medstaff_delete(request, pk):
-    m = get_object_or_404(MedicalStaff, pk=pk)
-    if request.method == 'POST':
-        m.delete()
-    return redirect('/institutions/?tab=medical')
-
-
-@login_required
-def professional_add(request):
-    if request.method == 'POST':
-        settings = get_Settings()
-        OtherProfessional.objects.create(
-            settings       = settings,
-            name           = request.POST.get('name', ''),
-            profession     = request.POST.get('profession', 'Teacher'),
-            contact_number = request.POST.get('contact_number', ''),
-        )
-    return redirect('/institutions/?tab=professionals')
-
-
-@login_required
-def professional_delete(request, pk):
-    p = get_object_or_404(OtherProfessional, pk=pk)
-    if request.method == 'POST':
-        p.delete()
-    return redirect('/institutions/?tab=professionals')
-
-
-# ============================================================
-# REPORTS  (f14, f15)
-# ============================================================
-
-@login_required
-def reports(request):
-    user       = get_user(request)
-    settings   = get_Settings()
-    residents  = Resident.objects.all()
+def reports_view(request):
+    residents  = Resident.objects.select_related('household').all()
     households = Household.objects.all()
+    total      = residents.count()
 
-    total_pop  = residents.count()
-    total_hh   = households.count()
-    disability = residents.filter(disability=True).count()
-    infra      = (
-        Facility.objects.filter(category='Building').count() +
-        Facility.objects.filter(category='Facility').count()
-    )
-    avg_hh = round(total_pop / total_hh, 1) if total_hh else 0
-
-    # Age groups for bar chart
-    age_groups = [
-        ('0-14',  residents.filter(age__lte=14).count()),
-        ('15-19', residents.filter(age__gte=15, age__lte=19).count()),
-        ('20-29', residents.filter(age__gte=20, age__lte=29).count()),
-        ('30-39', residents.filter(age__gte=30, age__lte=39).count()),
-        ('40-49', residents.filter(age__gte=40, age__lte=49).count()),
-        ('50-59', residents.filter(age__gte=50, age__lte=59).count()),
-        ('60+',   residents.filter(age__gte=60).count()),
-    ]
-    max_age = max([c for _, c in age_groups], default=1) or 1
-
-    # Gender
-    male   = residents.filter(gender='Male').count()
-    female = residents.filter(gender='Female').count()
-    male_pct   = round(male / total_pop * 100) if total_pop else 0
-    female_pct = round(female / total_pop * 100) if total_pop else 0
-
-    # Livelihood
-    livelihoods = {}
+    # Age group counts for chart
+    age_counts = {g: 0 for g in AGE_GROUP_ORDER}
     for r in residents:
-        l = r.livelihood.strip() if r.livelihood else 'None'
-        livelihoods[l] = livelihoods.get(l, 0) + 1
-    livelihoods_sorted = sorted(livelihoods.items(), key=lambda x: -x[1])
-    max_liv = max(livelihoods.values(), default=1) or 1
-
-    # House ownership
-    ownership = {}
-    for h in households:
-        o = h.ownership_status
-        ownership[o] = ownership.get(o, 0) + 1
-
-    # House materials
-    house_mat = {}
-    for h in households:
-        m = h.house_material
-        house_mat[m] = house_mat.get(m, 0) + 1
-    max_mat = max(house_mat.values(), default=1) or 1
-
-    # Buildings by type
-    bldg_types = {}
-    for f in Facility.objects.filter(category='Building'):
-        bldg_types[f.type] = bldg_types.get(f.type, 0) + 1
-    max_bldg = max(bldg_types.values(), default=1) or 1
-
-    # Detailed age group with disability
-    detail_ages = [
-        ('0-6 months',         residents.filter(age=0)),
-        ('7 months - 2 years', residents.filter(age__gte=0, age__lte=2).exclude(age=0)),
-        ('3-5 years old',      residents.filter(age__gte=3, age__lte=5)),
-        ('6-12 years old',     residents.filter(age__gte=6, age__lte=12)),
-        ('13-17 years old',    residents.filter(age__gte=13, age__lte=17)),
-        ('18-59 years old',    residents.filter(age__gte=18, age__lte=59)),
-        ('60 years and above', residents.filter(age__gte=60)),
-    ]
-    detail_age_data = []
-    max_detail = 1
-    for label, qs in detail_ages:
-        total  = qs.count()
-        with_d = qs.filter(disability=True).count()
-        without = total - with_d
-        if total > max_detail:
-            max_detail = total
-        detail_age_data.append((label, total, with_d, without))
+        age_counts[_age_group(r.birth_date)] += 1
 
     # Disability by gender
-    male_with_d    = residents.filter(gender='Male', disability=True).count()
-    male_without_d = residents.filter(gender='Male', disability=False).count()
-    female_with_d  = residents.filter(gender='Female', disability=True).count()
-    female_without_d = residents.filter(gender='Female', disability=False).count()
+    dis_male   = residents.filter(has_disability=True, gender='Male').count()
+    dis_female = residents.filter(has_disability=True, gender='Female').count()
 
-    # Disaster preparedness
-    evacuation  = Facility.objects.filter(category='Building', type='Emergency')
-    vulnerable  = [
-        ('Persons with Disability', disability),
-        ('Children (0-14)',         residents.filter(age__lte=14).count()),
-        ('Senior Citizens (60+)',   residents.filter(age__gte=60).count()),
-    ]
-    total_vulnerable = sum(v for _, v in vulnerable)
+    # Sector summary
+    sectors = {
+        'Labor Force':    residents.filter(in_labor_force=True).count(),
+        'Unemployed':     residents.filter(is_unemployed=True).count(),
+        'OSC (6–14)':     residents.filter(in_labor_force=False).count(),  # simplified
+        'OSY (15–24)':    residents.filter(is_unemployed=True).count(),    # simplified
+        'PWDs':           residents.filter(has_disability=True).count(),
+        'OFWs':           residents.filter(is_ofw=True).count(),
+        'Solo Parents':   residents.filter(is_solo_parent=True).count(),
+        'Indigenous (IPs)': residents.filter(is_indigenous=True).count(),
+        'LGBTQ+':         residents.exclude(lgbtq_type='').count(),
+    }
 
     context = {
-        'user':               user,
-        'settings':           settings,
-        'total_pop':          total_pop,
-        'total_hh':           total_hh,
-        'infra':              infra,
-        'disability':         disability,
-        'avg_hh':             avg_hh,
-        'age_groups':         age_groups,
-        'max_age':            max_age,
-        'male':               male,
-        'female':             female,
-        'male_pct':           male_pct,
-        'female_pct':         female_pct,
-        'livelihoods':        livelihoods_sorted,
-        'max_liv':            max_liv,
-        'ownership':          ownership.items(),
-        'house_mat':          house_mat.items(),
-        'max_mat':            max_mat,
-        'bldg_types':         bldg_types.items(),
-        'max_bldg':           max_bldg,
-        'detail_age_data':    detail_age_data,
-        'max_detail':         max_detail,
-        'male_with_d':        male_with_d,
-        'male_without_d':     male_without_d,
-        'female_with_d':      female_with_d,
-        'female_without_d':   female_without_d,
-        'evacuation':         evacuation,
-        'vulnerable':         vulnerable,
-        'total_vulnerable':   total_vulnerable,
+        'stats': {
+            'total_population': total,
+            'total_with_dis':   residents.filter(has_disability=True).count(),
+            'total_households': households.count(),
+            'avg_hh_members':   round(total / households.count(), 1) if households.count() else 0,
+            'infrastructure':   Building.objects.count() + Facility.objects.count(),
+        },
+        'age_labels':  list(age_counts.keys()),
+        'age_values':  list(age_counts.values()),
+        'gender_data': {
+            'male':   residents.filter(gender='Male').count(),
+            'female': residents.filter(gender='Female').count(),
+        },
+        'dis_male':   dis_male,
+        'dis_female': dis_female,
+        'sectors':    sectors,
+        'vulnerable': {
+            'pwds':     residents.filter(has_disability=True).count(),
+            'children': sum(v for k, v in age_counts.items()
+                            if k in ['0 – 6 months','7 months – 2 years old',
+                                     '3 – 5 years old','6 – 12 years old']),
+            'seniors':  age_counts['60 years old and above'],
+        },
     }
-    return render(request, 'accounts/reports.html', context)
+    return render(request, 'reports.html', context)
 
-
-# ============================================================
-# SETTINGS  (f16, f17, f18)
-# ============================================================
 
 @login_required
-def settings(request): # Match this name in urls.py
-    user     = get_user(request)
-    settings_obj = get_Settings()
-    tab      = request.GET.get('tab', 'profile')
-    users    = User.objects.all()
-    context  = {
-        'user':     user,
-        'settings': settings_obj,
-        'tab':      tab,
-        'users':    users,
-    }
-    return render(request, 'accounts/settings.html', context)
+def export_csv(request, dtype):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{dtype}.csv"'
+    writer = csv.writer(response)
+
+    if dtype == 'residents':
+        writer.writerow(['Name','Birth Date','Age','Gender','Household',
+                         'Livelihood','Disability','Civil Status','Citizenship'])
+        for r in Resident.objects.select_related('household').all():
+            writer.writerow([r.full_name, r.birth_date, r.age, r.gender,
+                             r.household.household_id if r.household else '',
+                             r.livelihood, r.has_disability, r.civil_status, r.citizenship])
+    elif dtype == 'facilities':
+        writer.writerow(['Type','Name','Details','Status'])
+        for b in Building.objects.all():
+            writer.writerow(['Building', b.name, b.building_type, b.status])
+        for f in Facility.objects.all():
+            writer.writerow(['Facility', f.name, f.facility_type, f.quantity])
+    elif dtype == 'institutions':
+        writer.writerow(['Type','Name','Members','Status'])
+        for i in Institution.objects.all():
+            writer.writerow(['Institution', i.name, i.members, i.status])
+        for m in MedicalStaff.objects.all():
+            writer.writerow(['Medical', m.full_name, m.position, ''])
+        for p in Professional.objects.all():
+            writer.writerow(['Professional', p.full_name, p.profession, ''])
+
+    return response
+
+
+# ─────────────────────────────────────────
+#  SETTINGS
+# ─────────────────────────────────────────
 
 @login_required
-def settings_save(request):
+def settings_view(request):
+    barangay = BarangayProfile.objects.first()
+    users    = User.objects.all().order_by('username')
+    return render(request, 'settings.html', {'barangay': barangay, 'users': users})
+
+
+@login_required
+def settings_save_profile(request):
     if request.method == 'POST':
-        s = get_Settings()
-        s.barangay_name = request.POST.get('barangay_name', s.barangay_name)
-        s.municipality  = request.POST.get('municipality', s.municipality)
-        s.province      = request.POST.get('province', s.province)
-        s.region        = request.POST.get('region', s.region)
-        s.vision        = request.POST.get('vision', s.vision)
-        s.mission       = request.POST.get('mission', s.mission)
-        s.goals         = request.POST.get('goals', s.goals)
-        s.save()
-    return redirect('/settings/?tab=profile')
+        b, _ = BarangayProfile.objects.get_or_create(pk=1)
+        b.vision   = request.POST.get('vision',  '')
+        b.mission  = request.POST.get('mission', '')
+        b.goals    = request.POST.get('goals',   '')
+        b.save()
+        messages.success(request, 'Barangay profile saved.')
+    return redirect('settings')
+
+
+@login_required
+def settings_save_barangay(request):
+    if request.method == 'POST':
+        b, _ = BarangayProfile.objects.get_or_create(pk=1)
+        b.name         = request.POST.get('name',         '')
+        b.municipality = request.POST.get('municipality', '')
+        b.province     = request.POST.get('province',     '')
+        b.region       = request.POST.get('region',       '')
+        b.captain      = request.POST.get('captain',      '')
+        b.contact      = request.POST.get('contact',      '')
+        b.save()
+        messages.success(request, 'Barangay information saved.')
+    return redirect('settings')
+
+
+@login_required
+def settings_add_user(request):
+    if request.method == 'POST':
+        username = request.POST.get('username','').strip()
+        password = request.POST.get('password','')
+        role     = request.POST.get('role','')
+        if username and len(password) >= 8:
+            if not User.objects.filter(username=username).exists():
+                User.objects.create_user(username=username, password=password, role=role)
+                messages.success(request, f'User "{username}" added.')
+            else:
+                messages.error(request, 'Username already exists.')
+        else:
+            messages.error(request, 'Invalid username or password too short.')
+    return redirect('settings')
+
+
+@login_required
+def settings_delete_user(request, pk):
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=pk)
+        if user != request.user:
+            user.delete()
+            messages.success(request, 'User removed.')
+    return redirect('settings')
+
+
+# ─────────────────────────────────────────
+#  PROFILE
+# ─────────────────────────────────────────
+
+@login_required
+def profile_view(request):
+    return render(request, 'profile.html', {'user': request.user})
+
+
+@login_required
+def profile_save(request):
+    if request.method == 'POST':
+        u = request.user
+        u.first_name = request.POST.get('first_name', '').strip()
+        u.last_name  = request.POST.get('last_name',  '').strip()
+        u.email      = request.POST.get('email',      '').strip()
+        u.contact    = request.POST.get('contact',    '').strip()
+        u.role       = request.POST.get('role',       '')
+
+        new_pw  = request.POST.get('new_password',     '')
+        confirm = request.POST.get('confirm_password', '')
+        if new_pw:
+            if new_pw == confirm and len(new_pw) >= 6:
+                u.set_password(new_pw)
+                messages.success(request, 'Password updated. Please log in again.')
+            else:
+                messages.error(request, 'Passwords do not match or too short.')
+                return redirect('profile')
+
+        if 'profile_photo' in request.FILES:
+            u.profile_photo = request.FILES['profile_photo']
+
+        u.save()
+        messages.success(request, 'Profile saved.')
+    return redirect('profile')

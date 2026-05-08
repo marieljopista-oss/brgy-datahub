@@ -34,63 +34,52 @@
              Django: <form action="/login/" method="POST">
                        {% csrf_token %}
              ========================================== -->
-        <div class="auth-panel active" id="panel-login">
-
+         <div class="auth-panel active" id="panel-login">
           <div class="auth-avatar">
-            <img src="{% static 'images/barangay_logo.png' %}" style="width:100%; height: 100%; object-fit:cover; border-radius:50%;"/>
+            <img src="{% static 'css/barangay_logo.png' %}" style="width:100%; height: 100%; object-fit:cover; border-radius:50%;"/>
           </div>
 
           <h2>Barangay DataHub</h2>
           <p>Sign in to access your barangay system.</p>
 
-          <!-- Error alert -->
-          <div class="auth-alert auth-alert-error" id="loginAlert">
-            <span>⚠️</span>
-            <span id="loginAlertMsg">Invalid username or password.</span>
-          </div>
+          <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
 
-          <!-- Username -->
-          <div class="auth-field">
-            <label for="loginUsername">Username</label>
-            <input type="text" id="loginUsername" name="username"
-                   placeholder="Enter your username"
-                   autocomplete="username"/>
-          </div>
-
-          <!-- Password -->
-          <div class="auth-field">
-            <label for="loginPassword">Password</label>
-            <div class="pw-wrap">
-              <input type="password" id="loginPassword" name="password"
-                     placeholder="Enter your password"
-                     autocomplete="current-password"/>
-              <button type="button" class="pw-toggle"
-                      onclick="togglePw('loginPassword', this)"
-                      title="Show / hide password">👁️</button>
+            {% if error %}
+            <div class="auth-alert auth-alert-error show">
+              <span>⚠️</span>
+              <span>{{ error }}</span>
             </div>
-          </div>
+            {% endif %}
 
-          <!-- Forgot password link -->
-          <div style="text-align:right; margin-top:-8px; margin-bottom:20px;">
-            <a href="#" style="font-size:12px; color:#1a6278; text-decoration:none; font-weight:600;"
-               onclick="showForgot(); return false;">
-              Forgot Password?
-            </a>
-          </div>
+            <div class="auth-field">
+              <label for="loginUsername">Username</label>
+              <input type="text" id="loginUsername" name="username" placeholder="Enter your username" required/>
+            </div>
 
-          <!-- Submit -->
-          <!-- Django: type="submit" instead of onclick -->
-          <button class="btn btn-primary auth-btn" onclick="handleLogin()">
-            LOGIN
-          </button>
+            <div class="auth-field">
+              <label for="loginPassword">Password</label>
+              <div class="pw-wrap">
+                <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required/>
+              </div>
+            </div>
 
-          <!-- Switch to sign up -->
+            <div style="text-align:right; margin-top:-8px; margin-bottom:20px;">
+              <a href="#" style="font-size:12px; color:#1a6278; text-decoration:none; font-weight:600;" onclick="showForgot(); return false;">
+                Forgot Password?
+              </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-btn">
+              LOGIN
+            </button>
+          </form>
+
           <div class="auth-switch">
             Don't have an account?
             <a onclick="showPanel('signup')">Sign up here</a>
           </div>
-
-        </div><!-- end login panel -->
+        </div>     
 
 
         <!-- ==========================================
@@ -98,174 +87,89 @@
              Django: <form action="/signup/" method="POST">
                        {% csrf_token %}
              ========================================== -->
-        <div class="auth-panel" id="panel-signup">
+            <div class="auth-panel" id="panel-signup">
+              <h2>Create Account</h2>
+              <p>Register a new barangay official account.</p>
 
-          <h2>Create Account</h2>
-          <p>Register a new barangay official account.</p>
+              <form method="POST" action="{% url 'signup' %}">
+                {% csrf_token %}
 
-          <!-- Error / success alert -->
-          <div class="auth-alert auth-alert-error" id="signupAlert">
-            <span>⚠️</span>
-            <span id="signupAlertMsg">Please fill in all required fields.</span>
-          </div>
-          <div class="auth-alert auth-alert-success" id="signupSuccess">
-            <span>✅</span>
-            <span>Account created! You can now log in.</span>
-          </div>
+                <div class="auth-field-row">
+                  <div class="auth-field" style="margin-bottom:0;">
+                    <label for="signupFirst">First Name</label>
+                    <input type="text" id="signupFirst" name="first_name" placeholder="First name" required/>
+                  </div>
+                  <div class="auth-field" style="margin-bottom:0;">
+                    <label for="signupLast">Last Name</label>
+                    <input type="text" id="signupLast" name="last_name" placeholder="Last name" required/>
+                  </div>
+                </div>
 
-          <!-- First name + Last name row -->
-          <div class="auth-field-row">
-            <div class="auth-field" style="margin-bottom:0;">
-              <label for="signupFirst">First Name</label>
-              <input type="text" id="signupFirst" name="first_name"
-                     placeholder="First name"/>
+                <div class="auth-field">
+                  <label for="signupRole">Barangay Official Role</label>
+                  <select id="signupRole" name="role" required>
+                    <option value="">Select your role…</option>
+                    <option value="Captain">Barangay Captain</option>
+                    <option value="Secretary">Barangay Secretary</option>
+                    <option value="Health Worker">Health Worker</option>
+                    <option value="Treasurer">Barangay Treasurer</option>
+                    <option value="Councilor">Barangay Councilor</option>
+                  </select>
+                </div>
+
+                <div class="auth-field">
+                  <label for="signupUsername">Username</label>
+                  <input type="text" id="signupUsername" name="username" placeholder="Choose a username" required/>
+                </div>
+
+                <div class="auth-field">
+                  <label for="signupEmail">Email Address</label>
+                  <input type="email" id="signupEmail" name="email" placeholder="e.g., admin@barangay.gov.ph" required/>
+                </div>
+
+                <div class="auth-field">
+                  <label for="signupPassword">Password</label>
+                  <div class="pw-wrap">
+                    <input type="password" id="signupPassword" name="password" placeholder="At least 8 characters" required/>
+                  </div>
+                </div>
+
+                <div class="terms-row">
+                  <input type="checkbox" id="signupTerms" name="terms" required/>
+                  <label for="signupTerms">
+                    I agree to the <a href="#">Terms & Conditions</a>
+                  </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-btn">
+                  CREATE ACCOUNT
+                </button>
+              </form>
+
+              <div class="auth-switch">
+                Already have an account?
+                <a onclick="showPanel('login')">Log in here</a>
+              </div>
             </div>
-            <div class="auth-field" style="margin-bottom:0;">
-              <label for="signupLast">Last Name</label>
-              <input type="text" id="signupLast" name="last_name"
-                     placeholder="Last name"/>
+
+        <div class="auth-panel" id="panel-forgot">
+        <form method="POST" action="{% url 'login' %}"> 
+            {% csrf_token %}
+            <h2>Reset Password</h2>
+            <p>Please contact your Barangay Administrator to reset your password manually.</p>
+            
+            <div class="auth-field">
+                <label>Registered Email</label>
+                <input type="email" placeholder="Enter your email" disabled>
             </div>
-          </div>
 
-          <!-- Role -->
-          <div class="auth-field">
-            <label for="signupRole">Barangay Official Role</label>
-            <select id="signupRole" name="role">
-              <option value="">Select your role…</option>
-              <option value="Captain">Barangay Captain</option>
-              <option value="Secretary">Barangay Secretary</option>
-              <option value="Health Worker">Health Worker</option>
-              <option value="Treasurer">Barangay Treasurer</option>
-              <option value="Councilor">Barangay Councilor</option>
-            </select>
-          </div>
-
-          <!-- Username -->
-          <div class="auth-field">
-            <label for="signupUsername">Username</label>
-            <input type="text" id="signupUsername" name="username"
-                   placeholder="Choose a username"
-                   autocomplete="username"
-                   oninput="clearFieldError(this)"/>
-          </div>
-
-          <!-- Email -->
-          <div class="auth-field">
-            <label for="signupEmail">Email Address</label>
-            <input type="email" id="signupEmail" name="email"
-                   placeholder="e.g., admin@barangay.gov.ph"
-                   oninput="clearFieldError(this)"/>
-          </div>
-
-          <!-- Contact -->
-          <div class="auth-field">
-            <label for="signupContact">Contact Number</label>
-            <input type="tel" id="signupContact" name="contact"
-                   placeholder="+63 9XX XXX XXXX"
-                   oninput="clearFieldError(this)"/>
-          </div>
-
-          <!-- Password -->
-          <div class="auth-field">
-            <label for="signupPassword">Password</label>
-            <div class="pw-wrap">
-              <input type="password" id="signupPassword" name="password"
-                     placeholder="At least 8 characters"
-                     autocomplete="new-password"
-                     oninput="checkStrength(this.value)"/>
-              <button type="button" class="pw-toggle"
-                      onclick="togglePw('signupPassword', this)"
-                      title="Show / hide password">👁️</button>
-            </div>
-            <!-- Password strength bar -->
-            <div class="pw-strength">
-              <div class="pw-strength-bar" id="strengthBar"></div>
-            </div>
-            <div class="pw-strength-label" id="strengthLabel"></div>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="auth-field">
-            <label for="signupConfirm">Confirm Password</label>
-            <div class="pw-wrap">
-              <input type="password" id="signupConfirm" name="confirm_password"
-                     placeholder="Re-enter your password"
-                     autocomplete="new-password"
-                     oninput="clearFieldError(this)"/>
-              <button type="button" class="pw-toggle"
-                      onclick="togglePw('signupConfirm', this)"
-                      title="Show / hide password">👁️</button>
-            </div>
-          </div>
-
-          <!-- Terms & Conditions checkbox -->
-          <div class="terms-row">
-            <input type="checkbox" id="signupTerms" name="terms"/>
-            <label for="signupTerms" style="font-size:12.5px; color:#4a6a7a; font-weight:400; text-transform:none; letter-spacing:0; margin-bottom:0; cursor:pointer;">
-              I agree to the
-              <a href="#" onclick="showTerms(); return false;">Terms &amp; Conditions</a>
-              and
-              <a href="#" onclick="showTerms(); return false;">Privacy Policy</a>
-              of the Barangay DataHub System.
-            </label>
-          </div>
-
-          <!-- Submit -->
-          <button class="btn btn-primary auth-btn" onclick="handleSignup()">
-            CREATE ACCOUNT
-          </button>
-
-          <!-- Switch to login -->
-          <div class="auth-switch">
-            Already have an account?
-            <a onclick="showPanel('login')">Log in here</a>
-          </div>
-
-        </div><!-- end signup panel -->
-
-
-        <!-- ==========================================
-             FORGOT PASSWORD PANEL
-             Django: <form action="/forgot-password/" method="POST">
-             ========================================== -->
-        <div class="forgot-panel" id="panel-forgot">
-
-          <button class="forgot-back" onclick="showPanel('login')">
-            ← Back to Login
-          </button>
-
-          <h2>Reset Password</h2>
-          <p style="font-size:13px; color:#7a9aaa; margin-bottom:24px;">
-            Enter your registered email address and we'll send you a password reset link.
-          </p>
-
-          <div class="auth-alert auth-alert-success" id="forgotSuccess">
-            <span>✅</span>
-            <span>Reset link sent! Please check your email inbox.</span>
-          </div>
-
-          <div class="auth-alert auth-alert-error" id="forgotError">
-            <span>⚠️</span>
-            <span>Email address not found in the system.</span>
-          </div>
-
-          <div class="auth-field">
-            <label for="forgotEmail">Email Address</label>
-            <input type="email" id="forgotEmail" name="forgot_email"
-                   placeholder="Enter your registered email"/>
-          </div>
-
-          <button class="btn btn-primary auth-btn" onclick="handleForgot()">
-            SEND RESET LINK
-          </button>
-
-        </div><!-- end forgot panel -->
-
-      </div><!-- end auth-body -->
-    </div><!-- end auth-card -->
-  </div><!-- end auth-page -->
-
-
+            <button type="button" class="btn btn-primary auth-btn" onclick="showPanel('login')">
+                BACK TO LOGIN
+            </button>
+        </form>
+        </div>
+      </div>
+    </div>
   <!-- ============================================
        TERMS & CONDITIONS MODAL
        ============================================ -->
@@ -324,7 +228,7 @@
   </div>
 
 
-  <script src="app.js"></script>
+  <script src="{% static 'css/app.js' %}"></script>
   <script>
 
     /* ================================================
@@ -344,7 +248,7 @@
       /* Clear all alerts */
       hideAllAlerts();
 
-      if (panel === 'login') {
+      if (panel === 'login_view') {
         document.getElementById('panel-login').classList.add('active');
         document.getElementById('tab-login').classList.add('active');
       } else if (panel === 'signup') {
@@ -457,158 +361,7 @@
        Django: replace with form submit to /login/
        ================================================ */
 
-    function handleLogin() {
-      const username = document.getElementById('loginUsername').value.trim();
-      const password = document.getElementById('loginPassword').value;
-
-      clearAllErrors(['loginUsername', 'loginPassword']);
-      document.getElementById('loginAlert').classList.remove('show');
-
-      let valid = true;
-
-      if (!username) {
-        setError('loginUsername', 'Username is required');
-        valid = false;
-      }
-      if (!password) {
-        setError('loginPassword', 'Password is required');
-        valid = false;
-      }
-
-      if (!valid) {
-        showAlert('loginAlert', 'Please fill in all required fields.');
-        return;
-      }
-
-      /* ---- Frontend demo: go to home page ----
-         Django: the form POST to /login/ handles authentication.
-         On success: redirect to /home/
-         On failure: return error message in context */
-      window.location.href = '/home/';  /* Redirect to home page on successful login */
-    }
-
-    /* ================================================
-       SIGN UP HANDLER
-       Django: replace with form submit to /signup/
-       ================================================ */
-
-    function handleSignup() {
-      const first    = document.getElementById('signupFirst').value.trim();
-      const last     = document.getElementById('signupLast').value.trim();
-      const role     = document.getElementById('signupRole').value;
-      const username = document.getElementById('signupUsername').value.trim();
-      const email    = document.getElementById('signupEmail').value.trim();
-      const contact  = document.getElementById('signupContact').value.trim();
-      const password = document.getElementById('signupPassword').value;
-      const confirm  = document.getElementById('signupConfirm').value;
-      const terms    = document.getElementById('signupTerms').checked;
-
-      clearAllErrors(['signupFirst','signupLast','signupRole','signupUsername','signupEmail','signupContact','signupPassword','signupConfirm']);
-      document.getElementById('signupAlert').classList.remove('show');
-      document.getElementById('signupSuccess').classList.remove('show');
-
-      let valid   = true;
-      let message = '';
-
-      /* Required field checks */
-      if (!first)    { setError('signupFirst',    'First name required'); valid = false; }
-      if (!last)     { setError('signupLast',     'Last name required');  valid = false; }
-      if (!role)     { setError('signupRole',     'Please select a role'); valid = false; }
-      if (!username) { setError('signupUsername', 'Username required');   valid = false; }
-      if (!email)    { setError('signupEmail',    'Email required');       valid = false; }
-      if (!contact)  { setError('signupContact',  'Contact required');     valid = false; }
-      if (!password) { setError('signupPassword', 'Password required');    valid = false; }
-      if (!confirm)  { setError('signupConfirm',  'Please confirm your password'); valid = false; }
-
-      if (!valid) {
-        showAlert('signupAlert', 'Please fill in all required fields.');
-        return;
-      }
-
-      /* Email format check */
-      const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailReg.test(email)) {
-        setError('signupEmail', 'Invalid email format');
-        showAlert('signupAlert', 'Please enter a valid email address.');
-        return;
-      }
-
-      /* Username: alphanumeric + underscore only */
-      const userReg = /^[a-zA-Z0-9_]{4,}$/;
-      if (!userReg.test(username)) {
-        setError('signupUsername', 'Username must be at least 4 characters (letters, numbers, underscore only)');
-        showAlert('signupAlert', 'Username must be at least 4 characters and contain only letters, numbers, or underscores.');
-        return;
-      }
-
-      /* Password length */
-      if (password.length < 8) {
-        setError('signupPassword', 'Password must be at least 8 characters');
-        showAlert('signupAlert', 'Password must be at least 8 characters long.');
-        return;
-      }
-
-      /* Password match */
-      if (password !== confirm) {
-        setError('signupConfirm', 'Passwords do not match');
-        showAlert('signupAlert', 'Passwords do not match. Please re-enter.');
-        return;
-      }
-
-      /* Terms acceptance */
-      if (!terms) {
-        showAlert('signupAlert', 'You must agree to the Terms & Conditions to create an account.');
-        return;
-      }
-
-      /* ---- All valid — show success ----
-         Django: form POST to /signup/ creates user, redirects to /login/
-         or auto-logs in and redirects to /home/ */
-      document.getElementById('signupSuccess').classList.add('show');
-
-      /* Clear the form */
-      ['signupFirst','signupLast','signupUsername','signupEmail',
-       'signupContact','signupPassword','signupConfirm'].forEach(function(id) {
-        document.getElementById(id).value = '';
-      });
-      document.getElementById('signupRole').value  = '';
-      document.getElementById('signupTerms').checked = false;
-      document.getElementById('strengthBar').style.width = '0%';
-      document.getElementById('strengthLabel').textContent = '';
-
-      /* Auto-switch to login after 2.5 seconds */
-      setTimeout(function() {
-        showPanel('login');
-      }, 2500);
-    }
-
-    /* ================================================
-       FORGOT PASSWORD HANDLER
-       Django: form POST to /forgot-password/
-       ================================================ */
-
-    function handleForgot() {
-      const email = document.getElementById('forgotEmail').value.trim();
-
-      document.getElementById('forgotSuccess').classList.remove('show');
-      document.getElementById('forgotError').classList.remove('show');
-
-      if (!email) {
-        showToast('Please enter your email address.', 'error');
-        return;
-      }
-
-      const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailReg.test(email)) {
-        showToast('Please enter a valid email address.', 'error');
-        return;
-      }
-
-      /* ---- Frontend demo: show success ----
-         Django: POST to /forgot-password/ sends the reset email */
-      document.getElementById('forgotSuccess').classList.add('show');
-      document.getElementById('forgotEmail').value = '';
-    }
+   
 
     /* ================================================
        TERMS MODAL
