@@ -13,14 +13,14 @@ urlpatterns = [
     # ─────────────────────────────────────────
     #  MAIN PAGES
     # ─────────────────────────────────────────
-    path('home/',         views.home_view,         name='home'),
-    path('dashboard/',    views.dashboard_view,    name='dashboard'),
-    path('residents/',    views.residents_view,    name='residents'),
-    path('facilities/',   views.facilities_view,   name='facilities'),
-    path('institutions/', views.institutions_view, name='institutions'),
-    path('reports/',      views.reports_view,      name='reports'),
-    path('settings/',     views.settings_view,     name='settings'),
-    path('profile/',      views.profile_view,      name='profile'),
+    path('home/',         views.home,         name='home'),
+    path('dashboard/',    views.dashboard,    name='dashboard'),
+    path('residents/',    views.residents,    name='residents'),
+    path('facilities/',   views.facilities,   name='facilities'),
+    path('institutions/', views.institutions, name='institutions'),
+    path('reports/',      views.reports,      name='reports'),
+    path('settings/',     views.settings,     name='settings'),
+    path('profile/',      views.profile,      name='profile'),
 
     # ─────────────────────────────────────────
     #  RESIDENTS CRUD

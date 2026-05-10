@@ -62,7 +62,7 @@ def login_view(request):
             return redirect('home')
         messages.error(request, 'Invalid username or password.')
 
-    return render(request, 'login.html', {'show_error': bool(messages.get_messages(request))})
+    return render(request, 'login_view.html', {'show_error': bool(messages.get_messages(request))})
 
 
 def signup_view(request):
@@ -114,7 +114,7 @@ def logout_view(request):
 # ─────────────────────────────────────────
 
 @login_required
-def home_view(request):
+def home(request):
     return render(request, 'home.html')
 
 
@@ -123,7 +123,7 @@ def home_view(request):
 # ─────────────────────────────────────────
 
 @login_required
-def dashboard_view(request):
+def dashboard(request):
     residents = Resident.objects.select_related('household').all()
 
     total       = residents.count()
@@ -231,7 +231,7 @@ def dashboard_view(request):
 # ─────────────────────────────────────────
 
 @login_required
-def residents_view(request):
+def residents(request):
     residents  = Resident.objects.select_related('household').order_by('last_name', 'first_name')
     households = Household.objects.all()
     return render(request, 'residents.html', {'residents': residents, 'households': households})
@@ -303,7 +303,7 @@ def resident_delete(request, pk):
 # ─────────────────────────────────────────
 
 @login_required
-def facilities_view(request):
+def facilities(request):
     context = {
         'land_bodies':  LandBody.objects.all(),
         'water_bodies': WaterBody.objects.all(),
@@ -382,7 +382,7 @@ def facility_delete(request, ftype, pk):
 # ─────────────────────────────────────────
 
 @login_required
-def institutions_view(request):
+def institutions(request):
     context = {
         'institutions': Institution.objects.all(),
         'medical_staff': MedicalStaff.objects.all(),
@@ -437,7 +437,7 @@ def institution_delete(request, itype, pk):
 # ─────────────────────────────────────────
 
 @login_required
-def reports_view(request):
+def reports(request):
     residents  = Resident.objects.select_related('household').all()
     households = Household.objects.all()
     total      = residents.count()
@@ -528,7 +528,7 @@ def export_csv(request, dtype):
 # ─────────────────────────────────────────
 
 @login_required
-def settings_view(request):
+def settings(request):
     barangay = BarangayProfile.objects.first()
     users    = User.objects.all().order_by('username')
     return render(request, 'settings.html', {'barangay': barangay, 'users': users})
@@ -593,7 +593,7 @@ def settings_delete_user(request, pk):
 # ─────────────────────────────────────────
 
 @login_required
-def profile_view(request):
+def profile(request):
     return render(request, 'profile.html', {'user': request.user})
 
 

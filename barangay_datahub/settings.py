@@ -34,7 +34,7 @@ ROOT_URLCONF = 'barangay_datahub.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'accounts' / 'templates' / 'accounts'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
