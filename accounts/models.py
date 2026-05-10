@@ -49,22 +49,25 @@ class BarangayProfile(models.Model):
 # ─────────────────────────────────────────
 
 class Household(models.Model):
-    OWNERSHIP_CHOICES = [
-        ('Owned',  'Owned'),
-        ('Rented', 'Rented'),
+    OWNERSHIP_CHOICES = [('Owned', 'Owned'), ('Rented', 'Rented')]
+    MATERIAL_CHOICES  = [
+        ('Concrete', 'Concrete'), ('Wood', 'Wood'),
+        ('Mixed', 'Mixed'), ('Light Material', 'Light Material'),
     ]
-    MATERIAL_CHOICES = [
-        ('Concrete',       'Concrete'),
-        ('Wood',           'Wood'),
-        ('Mixed',          'Mixed'),
-        ('Light Material', 'Light Material'),
-    ]
-    household_id  = models.CharField(max_length=20, unique=True)  # e.g. HH-001
-    ownership     = models.CharField(max_length=10, choices=OWNERSHIP_CHOICES, blank=True)
-    house_material= models.CharField(max_length=20, choices=MATERIAL_CHOICES,  blank=True)
+    household_id   = models.CharField(max_length=20, unique=True, blank=True)
+    head           = models.CharField(max_length=200, blank=True)  # ← ADD THIS
+    ownership      = models.CharField(max_length=10, choices=OWNERSHIP_CHOICES, blank=True)
+    house_material = models.CharField(max_length=20, choices=MATERIAL_CHOICES,  blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.household_id:  # auto-generate on first save
+            last = Household.objects.order_by('id').last()
+            next_num = (last.id + 1) if last else 1
+            self.household_id = f"HH-{next_num:04d}"  # e.g. HH-0001
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.household_id
+        return f"{self.household_id} — {self.head}" if self.head else self.household_id
 
 
 # ─────────────────────────────────────────

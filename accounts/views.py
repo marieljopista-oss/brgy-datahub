@@ -7,6 +7,8 @@ from django.db.models import Count, Q
 from datetime import date
 import json, csv
 
+from httpx import request
+
 from .models import (
     User, BarangayProfile,
     Household, Resident,
@@ -57,14 +59,13 @@ def login_view(request):
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
-        if user:
+        if user is not None:
             login(request, user)
             return redirect('home')
-        messages.error(request, 'Invalid username or password.')
+        else:
+            messages.error(request, 'Invalid username or password.')
 
-    return render(request, 'login_view.html', {'show_error': bool(messages.get_messages(request))})
-
-
+    return render(request, 'accounts/login_view.html', {})
 def signup_view(request):
     if request.method == 'POST':
         first    = request.POST.get('first_name', '').strip()
@@ -76,23 +77,24 @@ def signup_view(request):
         password = request.POST.get('password',   '')
         confirm  = request.POST.get('confirm_password', '')
 
-        # Basic validation
+        # Validation checks
         if not all([first, last, role, username, email, password, confirm]):
             messages.error(request, 'Please fill in all required fields.')
-            return redirect('login')
+            return render(request, 'accounts/login_view.html', {'show_signup': True})
 
         if password != confirm:
             messages.error(request, 'Passwords do not match.')
-            return redirect('login')
+            return render(request, 'accounts/login_view.html', {'show_signup': True})
 
         if len(password) < 8:
             messages.error(request, 'Password must be at least 8 characters.')
-            return redirect('login')
+            return render(request, 'accounts/login_view.html', {'show_signup': True})
 
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already taken.')
-            return redirect('login')
+            return render(request, 'accounts/login_view.html', {'show_signup': True})
 
+        # All good — create the user
         User.objects.create_user(
             username=username, password=password,
             first_name=first, last_name=last,
@@ -102,7 +104,6 @@ def signup_view(request):
         return redirect('login')
 
     return redirect('login')
-
 
 def logout_view(request):
     logout(request)
@@ -124,106 +125,24 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    residents = Resident.objects.select_related('household').all()
-
-    total       = residents.count()
-    male_count  = residents.filter(gender='Male').count()
-    female_count= residents.filter(gender='Female').count()
-
-    households     = Household.objects.all()
-    owned_count    = households.filter(ownership='Owned').count()
-    rented_count   = households.filter(ownership='Rented').count()
-
-    livelihood_count = residents.exclude(livelihood='').values('livelihood').distinct().count()
-    infra_count      = Building.objects.count() + Facility.objects.count()
-
-    # Livelihood distribution
-    livelihood_data = (
-        residents.exclude(livelihood='')
-        .values('livelihood')
-        .annotate(count=Count('id'))
-        .order_by('-count')[:10]
-    )
-
-    # House materials
-    material_data = (
-        households.exclude(house_material='')
-        .values('house_material')
-        .annotate(count=Count('id'))
-        .order_by('-count')
-    )
-
-    # Age groups with disability status
-    age_group_data = {g: {'without': 0, 'with': 0} for g in AGE_GROUP_ORDER}
-    for r in residents:
-        grp = _age_group(r.birth_date)
-        key = 'with' if r.has_disability else 'without'
-        age_group_data[grp][key] += 1
-
-    age_groups = [
-        {
-            'label':    g,
-            'without':  age_group_data[g]['without'],
-            'with':     age_group_data[g]['with'],
-            'total':    age_group_data[g]['without'] + age_group_data[g]['with'],
-        }
-        for g in AGE_GROUP_ORDER
-    ]
-
-    # Sector counts
-    sectors = {
-        'labor_force':  residents.filter(in_labor_force=True).count(),
-        'unemployed':   residents.filter(is_unemployed=True).count(),
-        'osc':          residents.filter(
-                            birth_date__lte=date.today().replace(year=date.today().year - 6),
-                            birth_date__gte=date.today().replace(year=date.today().year - 14),
-                        ).count(),
-        'osy':          residents.filter(
-                            birth_date__lte=date.today().replace(year=date.today().year - 15),
-                            birth_date__gte=date.today().replace(year=date.today().year - 24),
-                        ).count(),
-        'pwds':         residents.filter(has_disability=True).count(),
-        'ofw':          residents.filter(is_ofw=True).count(),
-        'solo_parent':  residents.filter(is_solo_parent=True).count(),
-        'indigenous':   residents.filter(is_indigenous=True).count(),
+    from django.db.models import Count
+    total  = Resident.objects.count()
+    stats  = {
+        'total_population': total,
+        'male':    Resident.objects.filter(gender='Male').count(),
+        'female':  Resident.objects.filter(gender='Female').count(),
+        'total_households':  Household.objects.count(),
+        'with_disability':   Resident.objects.filter(has_disability=True).count(),
+        'without_disability':Resident.objects.filter(has_disability=False).count(),
+        'labor_force':  Resident.objects.filter(in_labor_force=True).count(),
+        'unemployed':   Resident.objects.filter(is_unemployed=True).count(),
+        'ofw':          Resident.objects.filter(is_ofw=True).count(),
+        'solo_parents': Resident.objects.filter(is_solo_parent=True).count(),
+        'indigenous':   Resident.objects.filter(is_indigenous=True).count(),
+        'filipino':     Resident.objects.filter(citizenship='Filipino').count(),
+        'foreigner':    Resident.objects.filter(citizenship='Foreigner').count(),
     }
-
-    # Civil status & citizenship
-    civil = {s: residents.filter(civil_status=s).count() for s in ['Married','Single','Widowed','Separated']}
-    citizenship = {c: residents.filter(citizenship=c).count() for c in ['Filipino','Foreigner']}
-
-    # LGBTQ+
-    lgbtq_data = (
-        residents.exclude(lgbtq_type='')
-        .values('lgbtq_type')
-        .annotate(count=Count('id'))
-    )
-
-    barangay = BarangayProfile.objects.first()
-
-    context = {
-        'barangay':        barangay,
-        'stats': {
-            'total_population': total,
-            'male':             male_count,
-            'female':           female_count,
-            'households':       households.count(),
-            'owned':            owned_count,
-            'rented':           rented_count,
-            'livelihood_types': livelihood_count,
-            'infrastructure':   infra_count,
-        },
-        'livelihood_data': livelihood_data,
-        'material_data':   material_data,
-        'age_groups':      age_groups,
-        'total_no_dis':    sum(g['without'] for g in age_groups),
-        'total_with_dis':  sum(g['with']    for g in age_groups),
-        'sectors':         sectors,
-        'civil':           civil,
-        'citizenship':     citizenship,
-        'lgbtq_data':      lgbtq_data,
-    }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard.html', {'stats': stats})
 
 
 # ─────────────────────────────────────────
@@ -234,58 +153,56 @@ def dashboard(request):
 def residents(request):
     residents  = Resident.objects.select_related('household').order_by('last_name', 'first_name')
     households = Household.objects.all()
-    return render(request, 'residents.html', {'residents': residents, 'households': households})
-
+    return render(request, 'residents.html', {
+        'residents':  residents,
+        'households': households,
+    })
 
 @login_required
 def resident_add(request):
     if request.method == 'POST':
-        hh_id = request.POST.get('household')
-        household = Household.objects.filter(pk=hh_id).first() if hh_id else None
-
+        p = request.POST
+        hh_id = p.get('household') or None
         Resident.objects.create(
-            first_name    = request.POST.get('first_name', '').strip(),
-            last_name     = request.POST.get('last_name',  '').strip(),
-            birth_date    = request.POST.get('birth_date'),
-            gender        = request.POST.get('gender', 'Male'),
-            household     = household,
-            livelihood    = request.POST.get('livelihood',  ''),
-            civil_status  = request.POST.get('civil_status',''),
-            citizenship   = request.POST.get('citizenship', 'Filipino'),
-            lgbtq_type    = request.POST.get('lgbtq_type',  ''),
-            has_disability= request.POST.get('has_disability') == 'on',
-            in_labor_force= request.POST.get('in_labor_force') == 'on',
-            is_unemployed = request.POST.get('is_unemployed')  == 'on',
-            is_ofw        = request.POST.get('is_ofw')         == 'on',
-            is_solo_parent= request.POST.get('is_solo_parent') == 'on',
-            is_indigenous = request.POST.get('is_indigenous')  == 'on',
+            first_name    = p.get('first_name', ''),
+            last_name     = p.get('last_name', ''),
+            birth_date    = p.get('birth_date'),
+            gender        = p.get('gender', 'Male'),
+            household_id  = hh_id,
+            livelihood    = p.get('livelihood', ''),
+            civil_status  = p.get('civil_status', ''),
+            citizenship   = p.get('citizenship', 'Filipino'),
+            lgbtq_type    = p.get('lgbtq_type', ''),
+            has_disability = bool(p.get('has_disability')),
+            in_labor_force = bool(p.get('in_labor_force')),
+            is_unemployed  = bool(p.get('is_unemployed')),
+            is_ofw         = bool(p.get('is_ofw')),
+            is_solo_parent = bool(p.get('is_solo_parent')),
+            is_indigenous  = bool(p.get('is_indigenous')),
         )
-        messages.success(request, 'Resident added successfully.')
     return redirect('residents')
-
 
 @login_required
 def resident_edit(request, pk):
     r = get_object_or_404(Resident, pk=pk)
     if request.method == 'POST':
-        hh_id = request.POST.get('household')
-        r.first_name     = request.POST.get('first_name', '').strip()
-        r.last_name      = request.POST.get('last_name',  '').strip()
-        r.birth_date     = request.POST.get('birth_date')
-        r.gender         = request.POST.get('gender', 'Male')
-        r.household      = Household.objects.filter(pk=hh_id).first() if hh_id else None
-        r.livelihood     = request.POST.get('livelihood',  '')
-        r.civil_status   = request.POST.get('civil_status','')
-        r.citizenship    = request.POST.get('citizenship', 'Filipino')
-        r.lgbtq_type     = request.POST.get('lgbtq_type',  '')
-        r.has_disability = request.POST.get('has_disability') == 'on'
-        r.in_labor_force = request.POST.get('in_labor_force') == 'on'
-        r.is_unemployed  = request.POST.get('is_unemployed')  == 'on'
-        r.is_ofw         = request.POST.get('is_ofw')         == 'on'
-        r.is_solo_parent = request.POST.get('is_solo_parent') == 'on'
-        r.is_indigenous  = request.POST.get('is_indigenous')  == 'on'
+        p = request.POST
+        r.first_name    = p.get('first_name', '')
+        r.last_name     = p.get('last_name', '')
+        r.birth_date    = p.get('birth_date')
+        r.gender        = p.get('gender', 'Male')
+        r.household_id  = p.get('household') or None
+        r.livelihood    = p.get('livelihood', '')
+        r.civil_status  = p.get('civil_status', '')
+        r.citizenship   = p.get('citizenship', 'Filipino')
+        r.lgbtq_type    = p.get('lgbtq_type', '')
+        r.has_disability = bool(p.get('has_disability'))
+        r.in_labor_force = bool(p.get('in_labor_force'))
+        r.is_unemployed  = bool(p.get('is_unemployed'))
+        r.is_ofw         = bool(p.get('is_ofw'))
+        r.is_solo_parent = bool(p.get('is_solo_parent'))
+        r.is_indigenous  = bool(p.get('is_indigenous'))
         r.save()
-        messages.success(request, f'{r.full_name} updated.')
     return redirect('residents')
 
 
