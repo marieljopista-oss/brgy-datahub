@@ -1,4 +1,5 @@
 from pathlib import Path
+from django.contrib.messages import constants as message_constants
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,17 +52,18 @@ WSGI_APPLICATION = 'barangay_datahub.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'brgy_datahub_db',      # The name you created in pgAdmin/Postgres
-        'USER': 'postgres',           # Your Postgres username
-        'PASSWORD': 'M@QU1L4N',  # Your Postgres password
-        'HOST': '127.0.0.1',          # Keeps it on your local machine
-        'PORT': '5432',               # Default Postgres port
+        'NAME': 'brgy_datahub_db',
+        'USER': 'postgres',
+        'PASSWORD': 'M@QU1L4N',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+     'OPTIONS': {'min_length': 8}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -75,19 +77,27 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# ── Media files (profile photo uploads) ──
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/login/'
-
-# For Production (using Gmail, for example)
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#EMAIL_HOST = 'smtp.gmail.com'
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = True
-#EMAIL_HOST_USER = 'your-email@gmail.com'
-#EMAIL_HOST_PASSWORD = 'your-app-password'
+LOGIN_URL          = '/login/'
+LOGIN_REDIRECT_URL = '/home/'        # changed: sends user to home after login
+LOGOUT_REDIRECT_URL= '/login/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
+# ── Session: keep users logged in for 1 day ──
+SESSION_COOKIE_AGE              = 86400
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# ── Message tags (for success/error alerts in templates) ──
+MESSAGE_TAGS = {
+    message_constants.DEBUG:   'debug',
+    message_constants.INFO:    'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR:   'error',
+}

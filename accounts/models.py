@@ -101,7 +101,7 @@ class Resident(models.Model):
     # Core fields
     first_name  = models.CharField(max_length=100)
     last_name   = models.CharField(max_length=100)
-    birth_date  = models.DateField()
+    birth_date  = models.DateField(default='2000-01-01')
     gender      = models.CharField(max_length=10, choices=GENDER_CHOICES)
 
     # Optional links

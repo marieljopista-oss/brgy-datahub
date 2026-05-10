@@ -2,40 +2,63 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Authentication
-    path('login/', views.login_view, name='login'),
+
+    # ─────────────────────────────────────────
+    #  AUTH
+    # ─────────────────────────────────────────
+    path('',        views.login_view,  name='login'),
     path('signup/', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
 
-    
-    # Navigation & Dashboards
-    path('', views.home, name='home'),
-    path('home/', views.home, name='home'),
-    path('dashboard/', views.dashboard, name='dashboard'),
-    path('profile/', views.profile, name='profile'),
-    path('reports/', views.reports, name='reports'),
-    path('settings/', views.settings, name='settings'), # Changed to lowercase
-    path('settings/save/', views.settings_save, name='settings_save'),
+    # ─────────────────────────────────────────
+    #  MAIN PAGES
+    # ─────────────────────────────────────────
+    path('home/',         views.home_view,         name='home'),
+    path('dashboard/',    views.dashboard_view,    name='dashboard'),
+    path('residents/',    views.residents_view,    name='residents'),
+    path('facilities/',   views.facilities_view,   name='facilities'),
+    path('institutions/', views.institutions_view, name='institutions'),
+    path('reports/',      views.reports_view,      name='reports'),
+    path('settings/',     views.settings_view,     name='settings'),
+    path('profile/',      views.profile_view,      name='profile'),
 
-    # Residents
-    path('residents/', views.residents, name='residents'),
-    path('residents/add/', views.resident_add, name='resident_add'),
-    path('residents/edit/<int:pk>/', views.resident_edit, name='resident_edit'),
-    path('residents/delete/<int:pk>/', views.resident_delete, name='resident_delete'),
+    # ─────────────────────────────────────────
+    #  RESIDENTS CRUD
+    # ─────────────────────────────────────────
+    path('residents/add/',              views.resident_add,    name='resident_add'),
+    path('residents/edit/<int:pk>/',    views.resident_edit,   name='resident_edit'),
+    path('residents/delete/<int:pk>/',  views.resident_delete, name='resident_delete'),
 
-    # Facilities
-    path('facilities/', views.facilities, name='facilities'),
-    path('facilities/add/', views.facility_add, name='facility_add'),
-    path('facilities/delete/<int:pk>/', views.facility_delete, name='facility_delete'),
+    # ─────────────────────────────────────────
+    #  FACILITIES CRUD
+    #  ftype: land | water | building | facility | road | utility
+    # ─────────────────────────────────────────
+    path('facilities/add/<str:ftype>/',              views.facility_add,    name='facility_add'),
+    path('facilities/delete/<str:ftype>/<int:pk>/',  views.facility_delete, name='facility_delete'),
 
-    # Institutions
-    path('institutions/', views.institution, name='institution'),
-    path('institutions/add/', views.institution_add, name='institution_add'),
-    path('institutions/delete/<int:pk>/', views.institution_delete, name='institution_delete'),
-    
-    # Medical & Professionals
-    path('medical/add/', views.medstaff_add, name='medstaff_add'),
-    path('medical/delete/<int:pk>/', views.medstaff_delete, name='medstaff_delete'),
-    path('professional/add/', views.professional_add, name='professional_add'),
-    path('professional/delete/<int:pk>/', views.professional_delete, name='professional_delete'),
+    # ─────────────────────────────────────────
+    #  INSTITUTIONS CRUD
+    #  itype: institution | medical | professional
+    # ─────────────────────────────────────────
+    path('institutions/add/<str:itype>/',              views.institution_add,    name='institution_add'),
+    path('institutions/delete/<str:itype>/<int:pk>/',  views.institution_delete, name='institution_delete'),
+
+    # ─────────────────────────────────────────
+    #  REPORTS — CSV EXPORT
+    #  dtype: residents | facilities | institutions
+    # ─────────────────────────────────────────
+    path('reports/export/<str:dtype>/', views.export_csv, name='export_csv'),
+
+    # ─────────────────────────────────────────
+    #  SETTINGS ACTIONS
+    # ─────────────────────────────────────────
+    path('settings/profile/save/',          views.settings_save_profile,  name='settings_save_profile'),
+    path('settings/barangay/save/',         views.settings_save_barangay, name='settings_save_barangay'),
+    path('settings/users/add/',             views.settings_add_user,      name='settings_add_user'),
+    path('settings/users/delete/<int:pk>/', views.settings_delete_user,   name='settings_delete_user'),
+
+    # ─────────────────────────────────────────
+    #  PROFILE ACTIONS
+    # ─────────────────────────────────────────
+    path('profile/save/', views.profile_save, name='profile_save'),
 ]
