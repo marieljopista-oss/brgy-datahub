@@ -5,7 +5,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Barangay DataHub — Settings</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
 </head>
 <body>
 
@@ -228,7 +228,7 @@
 
   </div><!-- end page-content -->
 
-  <script src="app.js"></script>
+  <script src="{% static 'css/app.js' %}"></script>
   <script>
 
     /* ---- Barangay Profile ---- */
@@ -312,75 +312,4 @@
   </script>
 
 </body>
-</html>
-
- 
-
-        <p style="font-size:14px; font-weight:700; color:#1a3a4a; margin-bottom:12px;">Export Options</p> 
-
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;"> 
-
-          <button class="btn btn-outline" style="justify-content:center;">&#11015; Export Residents</button> 
-
-          <button class="btn btn-outline" style="justify-content:center;">&#11015; Export Facilities</button> 
-
-          <button class="btn btn-outline" style="justify-content:center;">&#11015; Export Institutions</button> 
-
-        </div> 
-
- 
-
-        <div class="notes-box"> 
-
-          <div class="notes-title">&#9888;&#65039; Important Notes</div> 
-
-          <ul> 
-
-            <li>Backups include all system data (residents, facilities, institutions, etc.)</li> 
-
-            <li>Store backup files securely and regularly</li> 
-
-            <li>Restoring a backup will overwrite current data</li> 
-
-            <li>Only administrators (Captain) can create and restore backups</li> 
-
-          </ul> 
-
-        </div> 
-
- 
-
-      </div> 
-
- 
-
-    </div> 
-
- 
-
-  </div> 
-
- 
-
-  <script> 
-
-    function showTab(name, btn) { 
-
-      ['profile','users','backup'].forEach(function(t) { 
-
-        document.getElementById('tab-' + t).style.display = 'none'; 
-
-      }); 
-
-      document.getElementById('tab-' + name).style.display = 'block'; 
-
-      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); }); 
-
-      btn.classList.add('active'); 
-
-    } 
-
-  </script> 
-</body> 
-
 </html>
