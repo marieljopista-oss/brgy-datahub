@@ -363,6 +363,7 @@ def reports(request):
     age_counts = {g: 0 for g in AGE_GROUP_ORDER}
     for r in residents:
         age_counts[_age_group(r.birth_date)] += 1
+    age_rows = [{'label': label, 'count': count} for label, count in age_counts.items()]
 
     # Disability by gender
     dis_male   = residents.filter(has_disability=True, gender='Male').count()
@@ -391,6 +392,7 @@ def reports(request):
         },
         'age_labels':  list(age_counts.keys()),
         'age_values':  list(age_counts.values()),
+        'age_rows':    age_rows,
         'gender_data': {
             'male':   residents.filter(gender='Male').count(),
             'female': residents.filter(gender='Female').count(),
