@@ -126,23 +126,81 @@ def home(request):
 @login_required
 def dashboard(request):
     from django.db.models import Count
-    total  = Resident.objects.count()
-    stats  = {
+    residents = Resident.objects.select_related('household').all()
+    households = Household.objects.all()
+    total = residents.count()
+
+    age_groups = []
+    age_dis = {g: {'without': 0, 'with_disability': 0} for g in AGE_GROUP_ORDER}
+    for resident in residents:
+        group = _age_group(resident.birth_date)
+        if resident.has_disability:
+            age_dis[group]['with_disability'] = age_dis[group].get('with_disability', 0) + 1
+        else:
+            age_dis[group]['without'] = age_dis[group].get('without', 0) + 1
+    for group in AGE_GROUP_ORDER:
+        without_disability = age_dis[group]['without']
+        with_disability = age_dis[group].get('with_disability', 0)
+        age_groups.append({
+            'label': group,
+            'without': without_disability,
+            'with_disability': with_disability,
+            'total': without_disability + with_disability,
+        })
+
+    livelihood_data = (
+        residents.exclude(livelihood='')
+        .values('livelihood')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    lgbtq_data = (
+        residents.exclude(lgbtq_type='')
+        .values('lgbtq_type')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    material_data = (
+        households.exclude(house_material='')
+        .values('house_material')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+
+    stats = {
         'total_population': total,
-        'male':    Resident.objects.filter(gender='Male').count(),
-        'female':  Resident.objects.filter(gender='Female').count(),
-        'total_households':  Household.objects.count(),
-        'with_disability':   Resident.objects.filter(has_disability=True).count(),
-        'without_disability':Resident.objects.filter(has_disability=False).count(),
-        'labor_force':  Resident.objects.filter(in_labor_force=True).count(),
-        'unemployed':   Resident.objects.filter(is_unemployed=True).count(),
-        'ofw':          Resident.objects.filter(is_ofw=True).count(),
-        'solo_parents': Resident.objects.filter(is_solo_parent=True).count(),
-        'indigenous':   Resident.objects.filter(is_indigenous=True).count(),
-        'filipino':     Resident.objects.filter(citizenship='Filipino').count(),
-        'foreigner':    Resident.objects.filter(citizenship='Foreigner').count(),
+        'male': residents.filter(gender='Male').count(),
+        'female': residents.filter(gender='Female').count(),
+        'total_households': households.count(),
+        'owned': households.filter(ownership='Owned').count(),
+        'rented': households.filter(ownership='Rented').count(),
+        'livelihood_types': residents.exclude(livelihood='').values('livelihood').distinct().count(),
+        'infrastructure': Building.objects.count() + Facility.objects.count(),
+        'with_disability': residents.filter(has_disability=True).count(),
+        'without_disability': residents.filter(has_disability=False).count(),
+        'labor_force': residents.filter(in_labor_force=True).count(),
+        'unemployed': residents.filter(is_unemployed=True).count(),
+        'ofw': residents.filter(is_ofw=True).count(),
+        'solo_parents': residents.filter(is_solo_parent=True).count(),
+        'indigenous': residents.filter(is_indigenous=True).count(),
+        'filipino': residents.filter(citizenship='Filipino').count(),
+        'foreigner': residents.filter(citizenship='Foreigner').count(),
+        'married': residents.filter(civil_status='Married').count(),
+        'single': residents.filter(civil_status='Single').count(),
+        'widowed': residents.filter(civil_status='Widowed').count(),
+        'separated': residents.filter(civil_status='Separated').count(),
+        'osc': sum(1 for resident in residents if not resident.in_labor_force and 6 <= resident.age <= 14),
+        'osy': sum(1 for resident in residents if resident.is_unemployed and 15 <= resident.age <= 24),
     }
-    return render(request, 'dashboard.html', {'stats': stats})
+
+    return render(request, 'dashboard.html', {
+        'stats': stats,
+        'age_groups': age_groups,
+        'livelihood_data': livelihood_data,
+        'lgbtq_data': lgbtq_data,
+        'material_data': material_data,
+        'barangay': BarangayProfile.objects.first(),
+    })
 
 
 # ─────────────────────────────────────────
@@ -151,7 +209,17 @@ def dashboard(request):
 
 @login_required
 def residents(request):
-    residents  = Resident.objects.select_related('household').order_by('last_name', 'first_name')
+    q = request.GET.get('q', '').strip()
+    residents = Resident.objects.select_related('household').order_by('last_name', 'first_name')
+    if q:
+        residents = residents.filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(gender__icontains=q) |
+            Q(livelihood__icontains=q) |
+            Q(civil_status__icontains=q) |
+            Q(citizenship__icontains=q)
+        )
     households = Household.objects.all()
     return render(request, 'residents.html', {
         'residents':  residents,
