@@ -176,16 +176,16 @@
       <div class="card-title">Quick Actions</div>
       <div class="card-subtitle">Shortcuts to common tasks</div>
       <div class="flex flex-wrap gap-8 mt-8">
-        <a href="residents.html" class="btn btn-primary">➕ Add Resident</a>
-        <a href="reports.html"   class="btn btn-outline">📄 Generate Report</a>
-        <a href="facilities.html" class="btn btn-outline">⚙️ Update Facilities</a>
-        <a href="institutions.html" class="btn btn-outline">🏢 Manage Institutions</a>
+        <a href="{% url 'residents' %}" class="btn btn-primary">➕ Add Resident</a>
+        <a href="{% url 'reports' %}" class="btn btn-outline">📄 Generate Report</a>
+        <a href="{% url 'facilities' %}" class="btn btn-outline">⚙️ Update Facilities</a>
+        <a href="{% url 'institutions' %}" class="btn btn-outline">🏢 Manage Institutions</a>
       </div>
     </div>
 
   </div><!-- end page-content -->
 
-  <script src="{% static 'js/app.js' %}"></script>
+  <script src="{% static 'css/app.js' %}"></script>
 
 </body>
 </html>
