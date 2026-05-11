@@ -35,11 +35,10 @@
                  alt="Profile photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
             <span id="avatarEmoji" style="display:none;">👤</span>
           {% else %}
-            <img id="profileImg" src="" alt=""
-                 style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
+            <img id="profileImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
             <span id="avatarEmoji">👤</span>
           {% endif %}
-          <!-- Camera button — visible only in edit mode -->
+          <!-- Camera button visible only in edit mode -->
           <div class="avatar-edit-btn" id="cameraBtn"
                onclick="document.getElementById('photoUpload').click()"
                title="Change photo" style="display:none;">
@@ -61,6 +60,7 @@
         <!-- ---- ACCOUNT INFORMATION ---- -->
         <div class="profile-section">Account Information</div>
 
+        <!-- Profile update form -->
         <form method="POST" action="{% url 'profile_save' %}" enctype="multipart/form-data" id="profileForm">
           {% csrf_token %}
 
@@ -72,11 +72,11 @@
             <label for="pRole">Barangay Official Role</label>
             <select id="pRole" name="role" disabled>
               <option value="">Select role...</option>
-              <option value="Captain"       {% if user_profile.role == "Captain"       %}selected{% endif %}>Captain</option>
-              <option value="Secretary"     {% if user_profile.role == "Secretary"     %}selected{% endif %}>Secretary</option>
-              <option value="Health Worker" {% if user_profile.role == "Health Worker" %}selected{% endif %}>Health Worker</option>
-              <option value="Treasurer"     {% if user_profile.role == "Treasurer"     %}selected{% endif %}>Treasurer</option>
-              <option value="Councilor"     {% if user_profile.role == "Councilor"     %}selected{% endif %}>Councilor</option>
+              <option value="Captain"      {% if user_profile.role == "Captain"      %}selected{% endif %}>Captain</option>
+              <option value="Secretary"    {% if user_profile.role == "Secretary"    %}selected{% endif %}>Secretary</option>
+              <option value="Health Worker"{% if user_profile.role == "Health Worker"%}selected{% endif %}>Health Worker</option>
+              <option value="Treasurer"    {% if user_profile.role == "Treasurer"    %}selected{% endif %}>Treasurer</option>
+              <option value="Councilor"    {% if user_profile.role == "Councilor"    %}selected{% endif %}>Councilor</option>
             </select>
           </div>
 
@@ -159,40 +159,44 @@
     </div>
   </div>
 
-  <script src="{% static 'css/app.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
   <script>
 
     const profileFields = ['pName', 'pEmail', 'pContact', 'pRole',
                            'pCurrPw', 'pNewPw', 'pConfirmPw'];
 
+    /* ---- Lock all fields (view mode) ---- */
     function lockFields() {
       profileFields.forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.disabled = true;
       });
-      document.getElementById('editBtn').style.display        = 'block';
-      document.getElementById('saveBtn').style.display        = 'none';
-      document.getElementById('cancelBtn').style.display      = 'none';
+      document.getElementById('editBtn').style.display       = 'block';
+      document.getElementById('saveBtn').style.display       = 'none';
+      document.getElementById('cancelBtn').style.display     = 'none';
       document.getElementById('passwordSection').style.display = 'none';
-      document.getElementById('cameraBtn').style.display      = 'none';
+      document.getElementById('cameraBtn').style.display     = 'none';
     }
 
+    /* ---- Unlock all fields (edit mode) ---- */
     function enableEdit() {
       profileFields.forEach(function(id) {
         const el = document.getElementById(id);
         if (el) el.disabled = false;
       });
-      document.getElementById('editBtn').style.display        = 'none';
-      document.getElementById('saveBtn').style.display        = 'block';
-      document.getElementById('cancelBtn').style.display      = 'block';
+      document.getElementById('editBtn').style.display       = 'none';
+      document.getElementById('saveBtn').style.display       = 'block';
+      document.getElementById('cancelBtn').style.display     = 'block';
       document.getElementById('passwordSection').style.display = 'block';
-      document.getElementById('cameraBtn').style.display      = 'flex';
+      document.getElementById('cameraBtn').style.display     = 'flex';
     }
 
+    /* ---- Cancel: reload the page to reset values ---- */
     function cancelEdit() {
       window.location.reload();
     }
 
+    /* ---- Client-side photo preview ---- */
     function previewPhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -205,6 +209,7 @@
       reader.readAsDataURL(file);
     }
 
+    /* ---- Client-side password validation ---- */
     document.getElementById('profileForm').addEventListener('submit', function(e) {
       const newPw     = document.getElementById('pNewPw').value;
       const confirmPw = document.getElementById('pConfirmPw').value;
@@ -219,7 +224,7 @@
       }
     });
 
-    /* Start in locked (view) mode */
+    /* Start in locked mode */
     lockFields();
 
   </script>
