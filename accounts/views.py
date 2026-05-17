@@ -283,6 +283,12 @@ def resident_delete(request, pk):
     return redirect('residents')
 
 
+@login_required
+def resident_import(request):
+    messages.info(request, 'Resident import is not implemented yet.')
+    return redirect('residents')
+
+
 # ─────────────────────────────────────────
 #  FACILITIES
 # ─────────────────────────────────────────

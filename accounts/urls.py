@@ -7,6 +7,7 @@ urlpatterns = [
     #  AUTH
     # ─────────────────────────────────────────
     path('',        views.login_view,  name='login'),
+    path('login/',  views.login_view,  name='login_alias'),
     path('signup/', views.signup_view, name='signup'),
     path('logout/', views.logout_view, name='logout'),
 
@@ -16,6 +17,8 @@ urlpatterns = [
     path('home/',      views.home,      name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('residents/', views.residents, name='residents'),
+    path('facilities/', views.facilities, name='facilities'),
+    path('institutions/', views.institutions, name='institutions'),
     path('reports/',   views.reports,   name='reports'),
     path('settings/',  views.settings,  name='settings'),
     path('profile/',   views.profile,   name='profile'),
@@ -27,6 +30,11 @@ urlpatterns = [
     path('residents/edit/<int:pk>/',   views.resident_edit,   name='resident_edit'),
     path('residents/delete/<int:pk>/', views.resident_delete, name='resident_delete'),
     path('residents/import/',          views.resident_import, name='resident_import'),
+
+    path('facilities/add/<str:ftype>/',             views.facility_add,     name='facility_add'),
+    path('facilities/delete/<str:ftype>/<int:pk>/', views.facility_delete,  name='facility_delete'),
+    path('institutions/add/<str:itype>/',           views.institution_add,  name='institution_add'),
+    path('institutions/delete/<str:itype>/<int:pk>/', views.institution_delete, name='institution_delete'),
 
     # ─────────────────────────────────────────
     #  REPORTS — CSV EXPORT
