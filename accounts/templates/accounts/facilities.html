@@ -4,423 +4,397 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Barangay DataHub — Facilities</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}" /> 
+  <title>Barangay DataHub - Facilities</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
 </head>
 <body>
-
   <div class="topbar">
     <div class="topbar-left">
-      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <a href="{% url 'dashboard' %}" class="btn-back">&#8592;</a>
       <span class="topbar-badge">FACILITIES</span>
     </div>
-    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a> 
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
   </div>
 
   <div class="page-header">
     <div class="page-header-text">
-      <h1>Facilities &amp; Infrastructure</h1>
-      <p>Manage barangay facilities and infrastructure</p>
+      <h1>Facilities and Infrastructure</h1>
+      <p>Add, review, and keep every infrastructure update visible right away.</p>
     </div>
   </div>
 
   <div class="page-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('landwater',this,'fac')">Land &amp; Water</button>
-      <button class="tab-btn"        onclick="switchTab('utilities',this,'fac')">Utilities</button>
-      <button class="tab-btn"        onclick="switchTab('buildings',this,'fac')">Buildings</button>
-      <button class="tab-btn"        onclick="switchTab('facilities',this,'fac')">Facilities</button>
-      <button class="tab-btn"        onclick="switchTab('roads',this,'fac')">Road Network</button>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">&#127806;</div>
+        <div class="stat-label">Land and Water</div>
+        <div class="stat-number">{{ land_water_total }}</div>
+        <div class="stat-sub">{{ land_bodies|length }} land records | {{ water_bodies|length }} water records</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127959;</div>
+        <div class="stat-label">Buildings</div>
+        <div class="stat-number">{{ buildings|length }}</div>
+        <div class="stat-sub">Operational and tracked buildings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127967;</div>
+        <div class="stat-label">Facilities</div>
+        <div class="stat-number">{{ facilities|length }}</div>
+        <div class="stat-sub">Community and service facilities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128739;</div>
+        <div class="stat-label">Road Network</div>
+        <div class="stat-number">{{ roads|length }}</div>
+        <div class="stat-sub">Tracked road segments</div>
+      </div>
     </div>
 
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('landwater',this,'fac')">Land and Water</button>
+      <button class="tab-btn" onclick="switchTab('utilities',this,'fac')">Utilities</button>
+      <button class="tab-btn" onclick="switchTab('buildings',this,'fac')">Buildings</button>
+      <button class="tab-btn" onclick="switchTab('facilities',this,'fac')">Facilities</button>
+      <button class="tab-btn" onclick="switchTab('roads',this,'fac')">Road Network</button>
+    </div>
 
-    <!-- ====== LAND & WATER ====== -->
     <div id="tab-landwater" class="tab-panel active" data-group="fac">
       <div class="two-col">
-
-        <!-- Bodies of Land -->
         <div class="card">
-          <div class="card-title">Bodies of Land</div>
-          <div class="card-subtitle">Available land types in the barangay</div>
-          <div class="inline-form">
+          <div class="card-title">Add Land Record</div>
+          <div class="card-subtitle">Save each land area and see it listed below after submit.</div>
+          <form method="POST" action="{% url 'facility_add' 'land' %}" class="inline-form">
+            {% csrf_token %}
             <div class="inline-form-group">
               <label>Land Name</label>
-              <input type="text" id="landName" placeholder="e.g., Rice Field Area"/>
+              <input type="text" name="name" placeholder="e.g., Rice Field Area" required/>
             </div>
             <div class="inline-form-group">
               <label>Type</label>
-              <select id="landType">
-                <option>Agricultural</option><option>Residential</option>
-                <option>Forest</option><option>Commercial</option><option>Industrial</option>
+              <select name="land_type">
+                <option>Agricultural</option>
+                <option>Residential</option>
+                <option>Forest</option>
+                <option>Commercial</option>
+                <option>Industrial</option>
               </select>
             </div>
             <div class="inline-form-group">
               <label>Area (hectares)</label>
-              <input type="number" id="landArea" placeholder="0" min="0"/>
+              <input type="number" step="0.01" min="0" name="area_ha" placeholder="0.00"/>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="addLand()">➕ Add</button>
-          </div>
-          <div id="landEmpty" class="empty-state" style="padding:30px;">
-            <div class="empty-icon">🌾</div>
-            <div class="empty-sub">No land records yet.</div>
-          </div>
-          <div class="table-wrap" id="landTableWrap" style="display:none;">
-            <table class="data-table" id="landTable">
-              <thead><tr><th>Name</th><th>Type</th><th>Area</th><th class="text-right">Actions</th></tr></thead>
-              <tbody id="landBody"></tbody>
-            </table>
-          </div>
+            <button class="btn btn-primary btn-sm" type="submit">Add Land</button>
+          </form>
+
+          {% if land_bodies %}
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Area</th><th class="text-right">Actions</th></tr></thead>
+                <tbody>
+                  {% for item in land_bodies %}
+                    <tr>
+                      <td class="fw-700">{{ item.name }}</td>
+                      <td>{{ item.land_type }}</td>
+                      <td>{% if item.area_ha %}{{ item.area_ha }} hectares{% else %}<span class="na">N/A</span>{% endif %}</td>
+                      <td>
+                        <form method="POST" action="{% url 'facility_delete' 'land' item.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="icon-btn icon-delete">Delete</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="empty-state"><div class="empty-title">No land records yet</div><div class="empty-sub">New land records will appear here after each update.</div></div>
+          {% endif %}
         </div>
 
-        <!-- Bodies of Water -->
         <div class="card">
-          <div class="card-title">Bodies of Water</div>
-          <div class="card-subtitle">Water sources in the barangay</div>
-          <div class="inline-form">
+          <div class="card-title">Add Water Record</div>
+          <div class="card-subtitle">Keep all water sources visible in one live list.</div>
+          <form method="POST" action="{% url 'facility_add' 'water' %}" class="inline-form">
+            {% csrf_token %}
             <div class="inline-form-group">
               <label>Water Body Name</label>
-              <input type="text" id="waterName" placeholder="e.g., Cogon River"/>
+              <input type="text" name="name" placeholder="e.g., Cogon River" required/>
             </div>
             <div class="inline-form-group">
               <label>Type</label>
-              <select id="waterType">
-                <option>River</option><option>Creek</option>
-                <option>Lake</option><option>Spring</option><option>Dam</option>
+              <select name="water_type">
+                <option>River</option>
+                <option>Creek</option>
+                <option>Lake</option>
+                <option>Spring</option>
+                <option>Dam</option>
               </select>
             </div>
             <div class="inline-form-group">
               <label>Description</label>
-              <input type="text" id="waterDesc" placeholder="Brief description"/>
+              <input type="text" name="description" placeholder="Brief description"/>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="addWater()">➕ Add</button>
-          </div>
-          <div id="waterEmpty" class="empty-state" style="padding:30px;">
-            <div class="empty-icon">💧</div>
-            <div class="empty-sub">No water body records yet.</div>
-          </div>
-          <div class="table-wrap" id="waterTableWrap" style="display:none;">
-            <table class="data-table" id="waterTable">
-              <thead><tr><th>Name</th><th>Type</th><th>Description</th><th class="text-right">Actions</th></tr></thead>
-              <tbody id="waterBody"></tbody>
-            </table>
-          </div>
+            <button class="btn btn-primary btn-sm" type="submit">Add Water</button>
+          </form>
+
+          {% if water_bodies %}
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Description</th><th class="text-right">Actions</th></tr></thead>
+                <tbody>
+                  {% for item in water_bodies %}
+                    <tr>
+                      <td class="fw-700">{{ item.name }}</td>
+                      <td>{{ item.water_type }}</td>
+                      <td>{% if item.description %}{{ item.description }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                      <td>
+                        <form method="POST" action="{% url 'facility_delete' 'water' item.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="icon-btn icon-delete">Delete</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="empty-state"><div class="empty-title">No water records yet</div><div class="empty-sub">New water records will appear here after each update.</div></div>
+          {% endif %}
         </div>
-
       </div>
-    </div><!-- end land & water -->
+    </div>
 
-
-    <!-- ====== UTILITIES ====== -->
     <div id="tab-utilities" class="tab-panel" data-group="fac">
       <div class="card">
-        <div class="card-title">Infrastructure Utilities</div>
-        <div class="card-subtitle">Basic utilities and services available in the barangay</div>
-
-        <div class="two-col">
-
-          <div class="card" style="border:1.5px solid #eaf2f6;">
-            <div style="font-size:20px;margin-bottom:8px;">⚡</div>
-            <div class="card-title">Electricity</div>
-            <div class="card-subtitle">Power supply available</div>
-            <select id="utilElec" onchange="markUtilSaved()">
-              <option value="Available">Available</option>
-              <option value="Not Available">Not Available</option>
-            </select>
+        <div class="card-title">Utility Settings</div>
+        <div class="card-subtitle">Save utility status and instantly keep the latest values visible.</div>
+        <form method="POST" action="{% url 'facility_add' 'utility' %}">
+          {% csrf_token %}
+          <div class="two-col">
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Electricity</label>
+              <select name="electricity">
+                <option value="Available" {% if not utility or utility.electricity == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.electricity == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Water Supply</label>
+              <select name="water_supply">
+                <option value="Available" {% if not utility or utility.water_supply == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.water_supply == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Waste Management</label>
+              <select name="waste_management">
+                <option value="Available" {% if not utility or utility.waste_management == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.waste_management == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Toilet Count</label>
+              <input type="number" min="0" name="toilet_count" value="{% if utility %}{{ utility.toilet_count }}{% else %}0{% endif %}"/>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Bath Count</label>
+              <input type="number" min="0" name="bath_count" value="{% if utility %}{{ utility.bath_count }}{% else %}0{% endif %}"/>
+            </div>
           </div>
-
-          <div class="card" style="border:1.5px solid #eaf2f6;">
-            <div style="font-size:20px;margin-bottom:8px;">🚿</div>
-            <div class="card-title">Water Supply</div>
-            <div class="card-subtitle">Clean water access</div>
-            <select id="utilWater" onchange="markUtilSaved()">
-              <option value="Available">Available</option>
-              <option value="Not Available">Not Available</option>
-            </select>
-          </div>
-
-          <div class="card" style="border:1.5px solid #eaf2f6;">
-            <div style="font-size:20px;margin-bottom:8px;">🗑️</div>
-            <div class="card-title">Waste Management</div>
-            <div class="card-subtitle">Garbage collection service</div>
-            <select id="utilWaste" onchange="markUtilSaved()">
-              <option value="Available">Available</option>
-              <option value="Not Available">Not Available</option>
-            </select>
-          </div>
-
-          <div class="card" style="border:1.5px solid #eaf2f6;">
-            <div style="font-size:20px;margin-bottom:8px;">🚽</div>
-            <div class="card-title">Toilets</div>
-            <div class="card-subtitle">Total number of toilets</div>
-            <input type="number" id="utilToilets" placeholder="0" min="0" onchange="markUtilSaved()"/>
-          </div>
-
-          <div class="card" style="border:1.5px solid #eaf2f6;">
-            <div style="font-size:20px;margin-bottom:8px;">🛁</div>
-            <div class="card-title">Bath Facilities</div>
-            <div class="card-subtitle">Total number of bath facilities</div>
-            <input type="number" id="utilBath" placeholder="0" min="0" onchange="markUtilSaved()"/>
-          </div>
-
-        </div>
-
-        <button class="btn btn-primary mt-12" onclick="saveUtilities()">💾 Save Utilities</button>
+          <button class="btn btn-primary" type="submit">Save Utility Output</button>
+        </form>
       </div>
-    </div><!-- end utilities -->
+    </div>
 
-
-    <!-- ====== BUILDINGS ====== -->
     <div id="tab-buildings" class="tab-panel" data-group="fac">
       <div class="card">
-        <div class="card-title">Buildings &amp; Infrastructure</div>
-        <div class="card-subtitle">Major buildings and facilities in the barangay</div>
-        <div class="inline-form">
+        <div class="card-title">Add Building</div>
+        <div class="card-subtitle">Every new building is listed below as part of the live infrastructure output.</div>
+        <form method="POST" action="{% url 'facility_add' 'building' %}" class="inline-form">
+          {% csrf_token %}
           <div class="inline-form-group">
             <label>Building Name</label>
-            <input type="text" id="bldgName" placeholder="e.g., Barangay Health Center"/>
+            <input type="text" name="name" placeholder="e.g., Barangay Health Center" required/>
           </div>
           <div class="inline-form-group">
             <label>Type</label>
-            <select id="bldgType">
-              <option>Health Facility</option><option>Educational</option>
-              <option>Emergency</option><option>Government</option><option>Religious</option>
+            <select name="building_type">
+              <option>Health Facility</option>
+              <option>Educational</option>
+              <option>Emergency</option>
+              <option>Government</option>
+              <option>Religious</option>
             </select>
           </div>
           <div class="inline-form-group">
             <label>Status</label>
-            <select id="bldgStatus">
-              <option>Operational</option><option>Under Repair</option><option>Closed</option>
+            <select name="status">
+              <option>Operational</option>
+              <option>Under Repair</option>
+              <option>Closed</option>
             </select>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="addBuilding()">➕ Add</button>
-        </div>
-        <div id="bldgEmpty" class="empty-state" style="padding:30px;">
-          <div class="empty-icon">🏛️</div>
-          <div class="empty-sub">No building records yet.</div>
-        </div>
-        <div class="table-wrap" id="bldgTableWrap" style="display:none;">
-          <table class="data-table" id="bldgTable">
-            <thead><tr><th>Name</th><th>Type</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
-            <tbody id="bldgBody"></tbody>
-          </table>
-        </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Building</button>
+        </form>
+
+        {% if buildings %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in buildings %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.building_type }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'building' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No building records yet</div><div class="empty-sub">Saved buildings will be displayed here automatically.</div></div>
+        {% endif %}
       </div>
-    </div><!-- end buildings -->
+    </div>
 
-
-    <!-- ====== FACILITIES ====== -->
     <div id="tab-facilities" class="tab-panel" data-group="fac">
       <div class="card">
-        <div class="card-title">Primary Facilities &amp; Services</div>
-        <div class="card-subtitle">Community facilities and services</div>
-        <div class="inline-form">
+        <div class="card-title">Add Facility</div>
+        <div class="card-subtitle">Each submit updates the facility output table right below.</div>
+        <form method="POST" action="{% url 'facility_add' 'facility' %}" class="inline-form">
+          {% csrf_token %}
           <div class="inline-form-group">
             <label>Facility Name</label>
-            <input type="text" id="facName" placeholder="e.g., Multi-Purpose Hall"/>
+            <input type="text" name="name" placeholder="e.g., Multi-Purpose Hall" required/>
           </div>
           <div class="inline-form-group">
             <label>Type</label>
-            <select id="facType">
-              <option>Community</option><option>Security</option>
-              <option>Transport</option><option>Health</option><option>Education</option>
+            <select name="facility_type">
+              <option>Community</option>
+              <option>Security</option>
+              <option>Transport</option>
+              <option>Health</option>
+              <option>Education</option>
             </select>
           </div>
           <div class="inline-form-group">
             <label>Quantity</label>
-            <input type="number" id="facQty" placeholder="1" min="1" value="1"/>
+            <input type="number" min="1" name="quantity" value="1"/>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="addFacility()">➕ Add</button>
-        </div>
-        <div id="facEmpty" class="empty-state" style="padding:30px;">
-          <div class="empty-icon">🏗️</div>
-          <div class="empty-sub">No facility records yet.</div>
-        </div>
-        <div class="table-wrap" id="facTableWrap" style="display:none;">
-          <table class="data-table" id="facTable">
-            <thead><tr><th>Name</th><th>Type</th><th>Quantity</th><th class="text-right">Actions</th></tr></thead>
-            <tbody id="facBody"></tbody>
-          </table>
-        </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Facility</button>
+        </form>
+
+        {% if facilities %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Quantity</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in facilities %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.facility_type }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'facility' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No facility records yet</div><div class="empty-sub">Saved facilities will be displayed here automatically.</div></div>
+        {% endif %}
       </div>
-    </div><!-- end facilities -->
+    </div>
 
-
-    <!-- ====== ROAD NETWORK ====== -->
     <div id="tab-roads" class="tab-panel" data-group="fac">
       <div class="card">
-        <div class="card-title">Road Network</div>
-        <div class="card-subtitle">Road infrastructure and maintenance status</div>
-        <div class="inline-form">
+        <div class="card-title">Add Road Segment</div>
+        <div class="card-subtitle">Road updates feed directly into the live infrastructure output.</div>
+        <form method="POST" action="{% url 'facility_add' 'road' %}" class="inline-form">
+          {% csrf_token %}
           <div class="inline-form-group">
             <label>Road Type</label>
-            <select id="roadType">
-              <option>Concrete</option><option>Gravel</option>
-              <option>Asphalt</option><option>Dirt Road</option>
+            <select name="road_type">
+              <option>Concrete</option>
+              <option>Gravel</option>
+              <option>Asphalt</option>
+              <option>Dirt Road</option>
             </select>
           </div>
           <div class="inline-form-group">
             <label>Length (km)</label>
-            <input type="number" id="roadLen" placeholder="0.0" min="0" step="0.1"/>
+            <input type="number" step="0.01" min="0" name="length_km" placeholder="0.00" required/>
           </div>
           <div class="inline-form-group">
-            <label>Maintenance Status</label>
-            <select id="roadStatus">
-              <option>Good</option><option>Fair</option><option>Poor</option>
+            <label>Status</label>
+            <select name="status">
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Poor</option>
             </select>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="addRoad()">➕ Add</button>
-        </div>
-        <div id="roadEmpty" class="empty-state" style="padding:30px;">
-          <div class="empty-icon">🛣️</div>
-          <div class="empty-sub">No road network records yet.</div>
-        </div>
-        <div class="table-wrap" id="roadTableWrap" style="display:none;">
-          <table class="data-table" id="roadTable">
-            <thead><tr><th>Type</th><th>Length (km)</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
-            <tbody id="roadBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div><!-- end roads -->
+          <button class="btn btn-primary btn-sm" type="submit">Add Road</button>
+        </form>
 
-  </div><!-- end page-content -->
+        {% if roads %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Road Type</th><th>Length</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in roads %}
+                  <tr>
+                    <td class="fw-700">{{ item.road_type }}</td>
+                    <td>{{ item.length_km }} km</td>
+                    <td>{{ item.status }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'road' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No road records yet</div><div class="empty-sub">Saved roads will be displayed here automatically.</div></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
   <script src="{% static 'css/app.js' %}"></script>
   <script>
-
-    /* ---- Generic helper: toggle empty state ---- */
-    function toggleEmpty(bodyId, emptyId, wrapId) {
-      const count = document.getElementById(bodyId).querySelectorAll('tr').length;
-      document.getElementById(emptyId).style.display = count ? 'none' : '';
-      document.getElementById(wrapId).style.display  = count ? '' : 'none';
+    const params = new URLSearchParams(window.location.search);
+    const activeTab = params.get('tab');
+    if (activeTab) {
+      const tabButton = Array.from(document.querySelectorAll('.tab-btn')).find((btn) => btn.getAttribute('onclick').includes("'" + activeTab + "'"));
+      if (tabButton) {
+        switchTab(activeTab, tabButton, 'fac');
+      }
     }
-
-    /* ---- Status badge helper ---- */
-    function statusBadge(status) {
-      const map = { Operational:'badge-green', Good:'badge-green', Fair:'badge-yellow', Poor:'badge-red', 'Under Repair':'badge-yellow', Closed:'badge-red' };
-      return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
-    }
-
-    /* ---- Delete row helper ---- */
-    function deleteRow(rowId, emptyId, wrapId, label) {
-      showConfirm('Delete Record', `Delete <strong>${label}</strong>? This cannot be undone.`, function() {
-        const row = document.getElementById(rowId);
-        if (row) row.remove();
-        toggleEmpty(rowId.replace('row-','') + 'Body', emptyId, wrapId);
-        showToast(`${label} deleted.`, 'warning');
-      });
-    }
-
-    /* ---- Row ID counters ---- */
-    let landIdx=0, waterIdx=0, bldgIdx=0, facIdx=0, roadIdx=0;
-
-    /* ---- LAND ---- */
-    function addLand() {
-      const name = document.getElementById('landName').value.trim();
-      const type = document.getElementById('landType').value;
-      const area = document.getElementById('landArea').value;
-      if (!name) { showToast('Enter a land name.', 'error'); return; }
-      const id = 'row-land-' + (++landIdx);
-      const tr = `<tr id="${id}">
-        <td class="fw-700">${name}</td><td>${type}</td>
-        <td>${area ? area + ' hectares' : '—'}</td>
-        <td><div class="action-icons">
-          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('landBody','landEmpty','landTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
-        </div></td></tr>`;
-      document.getElementById('landBody').insertAdjacentHTML('beforeend', tr);
-      document.getElementById('landName').value = '';
-      document.getElementById('landArea').value = '';
-      toggleEmpty('landBody','landEmpty','landTableWrap');
-      showToast(`${name} added.`, 'success');
-    }
-
-    /* ---- WATER ---- */
-    function addWater() {
-      const name = document.getElementById('waterName').value.trim();
-      const type = document.getElementById('waterType').value;
-      const desc = document.getElementById('waterDesc').value.trim();
-      if (!name) { showToast('Enter a water body name.', 'error'); return; }
-      const id = 'row-water-' + (++waterIdx);
-      const tr = `<tr id="${id}">
-        <td class="fw-700">${name}</td><td>${type}</td>
-        <td>${desc || '<span class="na">—</span>'}</td>
-        <td><div class="action-icons">
-          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('waterBody','waterEmpty','waterTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
-        </div></td></tr>`;
-      document.getElementById('waterBody').insertAdjacentHTML('beforeend', tr);
-      document.getElementById('waterName').value = '';
-      document.getElementById('waterDesc').value = '';
-      toggleEmpty('waterBody','waterEmpty','waterTableWrap');
-      showToast(`${name} added.`, 'success');
-    }
-
-    /* ---- BUILDINGS ---- */
-    function addBuilding() {
-      const name   = document.getElementById('bldgName').value.trim();
-      const type   = document.getElementById('bldgType').value;
-      const status = document.getElementById('bldgStatus').value;
-      if (!name) { showToast('Enter a building name.', 'error'); return; }
-      const id = 'row-bldg-' + (++bldgIdx);
-      const tr = `<tr id="${id}">
-        <td class="fw-700">${name}</td><td>${type}</td>
-        <td>${statusBadge(status)}</td>
-        <td><div class="action-icons">
-          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('bldgBody','bldgEmpty','bldgTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
-        </div></td></tr>`;
-      document.getElementById('bldgBody').insertAdjacentHTML('beforeend', tr);
-      document.getElementById('bldgName').value = '';
-      toggleEmpty('bldgBody','bldgEmpty','bldgTableWrap');
-      showToast(`${name} added.`, 'success');
-    }
-
-    /* ---- FACILITIES ---- */
-    function addFacility() {
-      const name = document.getElementById('facName').value.trim();
-      const type = document.getElementById('facType').value;
-      const qty  = document.getElementById('facQty').value || '1';
-      if (!name) { showToast('Enter a facility name.', 'error'); return; }
-      const id = 'row-fac-' + (++facIdx);
-      const tr = `<tr id="${id}">
-        <td class="fw-700">${name}</td><td>${type}</td><td>${qty}</td>
-        <td><div class="action-icons">
-          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('facBody','facEmpty','facTableWrap');showToast('${name} deleted.','warning')">🗑️</button>
-        </div></td></tr>`;
-      document.getElementById('facBody').insertAdjacentHTML('beforeend', tr);
-      document.getElementById('facName').value = '';
-      document.getElementById('facQty').value  = '1';
-      toggleEmpty('facBody','facEmpty','facTableWrap');
-      showToast(`${name} added.`, 'success');
-    }
-
-    /* ---- ROADS ---- */
-    function addRoad() {
-      const type   = document.getElementById('roadType').value;
-      const len    = document.getElementById('roadLen').value;
-      const status = document.getElementById('roadStatus').value;
-      if (!len) { showToast('Enter road length.', 'error'); return; }
-      const id = 'row-road-' + (++roadIdx);
-      const label = type + ' (' + len + ' km)';
-      const tr = `<tr id="${id}">
-        <td class="fw-700">${type}</td><td>${len} km</td>
-        <td>${statusBadge(status)}</td>
-        <td><div class="action-icons">
-          <button class="icon-btn icon-delete" onclick="document.getElementById('${id}').remove();toggleEmpty('roadBody','roadEmpty','roadTableWrap');showToast('Record deleted.','warning')">🗑️</button>
-        </div></td></tr>`;
-      document.getElementById('roadBody').insertAdjacentHTML('beforeend', tr);
-      document.getElementById('roadLen').value = '';
-      toggleEmpty('roadBody','roadEmpty','roadTableWrap');
-      showToast(`${label} added.`, 'success');
-    }
-
-    /* ---- UTILITIES ---- */
-    function saveUtilities() {
-      showToast('Utilities saved successfully!', 'success');
-      /* Django: POST to /facilities/utilities/save/ */
-    }
-    function markUtilSaved() { /* mark as unsaved — could add a dirty indicator */ }
-
   </script>
-
 </body>
 </html>

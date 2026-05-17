@@ -4,19 +4,18 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Barangay DataHub — Home</title>
+  <title>Barangay DataHub - Home</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
   <link rel="stylesheet" href="{% static 'css/home.css' %}"/>
 </head>
 <body>
 
-  <!-- Top bar -->
   <div class="home-topbar">
     <div class="home-brand">
-      🏛️ Barangay DataHub
+      Barangay DataHub
       <span>Profiling &amp; Socio-Economic Management System</span>
     </div>
-    <a href="{% url 'profile' %}" class="user-avatar" title="My Profile">👤</a>
+    <a href="{% url 'profile' %}" class="user-avatar" title="My Profile">&#128100;</a>
   </div>
 
   <div class="home-body">
@@ -26,47 +25,32 @@
     </div>
 
     <div class="menu-grid">
-
       <a href="{% url 'dashboard' %}" class="menu-btn">
-        <span class="menu-icon">📊</span>
+        <span class="menu-icon">&#128202;</span>
         <span class="menu-label">Dashboard</span>
-        <span class="menu-desc">Overview &amp; Summary</span>
+        <span class="menu-desc">Overview, Reports &amp; Live Output</span>
       </a>
 
       <a href="{% url 'residents' %}" class="menu-btn">
-        <span class="menu-icon">👥</span>
+        <span class="menu-icon">&#128101;</span>
         <span class="menu-label">Residents</span>
         <span class="menu-desc">Profiles &amp; Records</span>
       </a>
 
-      <a href="{% url 'facilities' %}" class="menu-btn">
-        <span class="menu-icon">🏗️</span>
-        <span class="menu-label">Facilities</span>
-        <span class="menu-desc">Infrastructure &amp; Land</span>
-      </a>
-
-      <a href="{% url 'institutions' %}" class="menu-btn">
-        <span class="menu-icon">🏢</span>
-        <span class="menu-label">Institutions</span>
-        <span class="menu-desc">Organizations &amp; Staff</span>
-      </a>
-
       <a href="{% url 'reports' %}" class="menu-btn">
-        <span class="menu-icon">📄</span>
+        <span class="menu-icon">&#128196;</span>
         <span class="menu-label">Reports</span>
-        <span class="menu-desc">Analytics &amp; Export</span>
+        <span class="menu-desc">Opens the Analytics section in Dashboard</span>
       </a>
 
       <a href="{% url 'settings' %}" class="menu-btn">
-        <span class="menu-icon">⚙️</span>
+        <span class="menu-icon">&#9881;</span>
         <span class="menu-label">Settings</span>
         <span class="menu-desc">Config &amp; Users</span>
       </a>
-
     </div>
   </div>
 
-  <script src="{% static 'js/app.js' %}"></script>
-
+  <script src="{% static 'css/app.js' %}"></script>
 </body>
 </html>
