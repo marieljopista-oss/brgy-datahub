@@ -4,208 +4,345 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Barangay DataHub - Dashboard</title>
+  <title>Barangay DataHub - Integrated Dashboard</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
 </head>
 <body>
 
   <div class="topbar">
     <div class="topbar-left">
-      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <a href="{% url 'home' %}" class="btn-back">&#8592;</a>
       <span class="topbar-badge">DASHBOARD</span>
     </div>
-    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
   </div>
 
   <div class="page-header">
     <div class="page-header-text">
-      <h1>Dashboard</h1>
-      <p>Overview of {% if barangay and barangay.name %}{{ barangay.name }}{% else %}your barangay{% endif %}</p>
+      <h1>Integrated Dashboard and Reports</h1>
+      <p>Live overview of {% if barangay and barangay.name %}{{ barangay.name }}{% else %}your barangay{% endif %} with analytics, exports, and latest updates in one place.</p>
+    </div>
+    <div class="flex gap-8 flex-wrap" style="margin-top:6px;">
+      <a href="{% url 'residents' %}" class="btn btn-primary">Add Resident</a>
+      <a href="{% url 'facilities' %}" class="btn btn-outline">Open Facilities</a>
+      <a href="{% url 'institutions' %}" class="btn btn-outline">Open Institutions</a>
+      <a href="{% url 'export_csv' 'residents' %}" class="btn btn-outline">Export Residents</a>
+      <a href="{% url 'export_csv' 'facilities' %}" class="btn btn-outline">Export Facilities</a>
+      <a href="{% url 'export_csv' 'institutions' %}" class="btn btn-outline">Export Institutions</a>
     </div>
   </div>
 
   <div class="page-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
     <div class="stat-row">
       <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-label">Total Population</div>
+        <div class="stat-icon">&#128101;</div>
+        <div class="stat-label">Population</div>
         <div class="stat-number">{{ stats.total_population }}</div>
         <div class="stat-sub">Male: {{ stats.male }} | Female: {{ stats.female }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">🏠</div>
+        <div class="stat-icon">&#127968;</div>
         <div class="stat-label">Households</div>
         <div class="stat-number">{{ stats.total_households }}</div>
         <div class="stat-sub">Owned: {{ stats.owned }} | Rented: {{ stats.rented }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">💼</div>
-        <div class="stat-label">Livelihood Types</div>
-        <div class="stat-number">{{ stats.livelihood_types }}</div>
-        <div class="stat-sub">Different occupations</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏗</div>
+        <div class="stat-icon">&#127959;</div>
         <div class="stat-label">Infrastructure</div>
         <div class="stat-number">{{ stats.infrastructure }}</div>
-        <div class="stat-sub">Buildings and facilities</div>
+        <div class="stat-sub">{{ stats.buildings }} buildings | {{ stats.facilities }} facilities | {{ stats.roads }} roads</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127970;</div>
+        <div class="stat-label">Institutions</div>
+        <div class="stat-number">{{ stats.institutions }}</div>
+        <div class="stat-sub">{{ stats.medical_staff }} medical | {{ stats.professionals }} professionals</div>
       </div>
     </div>
 
     <div class="two-col">
       <div class="card">
-        <div class="card-title">Livelihood Distribution</div>
-        <div class="card-subtitle">Top occupations in the barangay</div>
-        {% if livelihood_data %}
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Livelihood</th><th class="text-right">Count</th></tr></thead>
-            <tbody>
-              {% for item in livelihood_data %}
-              <tr><td>{{ item.livelihood }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+        <div class="card-title">Live Resident Updates</div>
+        <div class="card-subtitle">New and updated residents appear here automatically.</div>
+        {% if recent_residents %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Age</th><th>Gender</th><th>Livelihood</th></tr></thead>
+              <tbody>
+                {% for resident in recent_residents %}
+                  <tr>
+                    <td class="fw-700">{{ resident.full_name }}</td>
+                    <td>{{ resident.age }}</td>
+                    <td>{{ resident.gender }}</td>
+                    <td>{% if resident.livelihood %}{{ resident.livelihood }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         {% else %}
-        <div class="empty-state">
-          <div class="empty-title">No Data Yet</div>
-          <div class="empty-sub">Add residents to see livelihood distribution.</div>
-        </div>
+          <div class="empty-state">
+            <div class="empty-title">No resident updates yet</div>
+            <div class="empty-sub">New residents will be reflected here once records are added.</div>
+          </div>
         {% endif %}
       </div>
 
       <div class="card">
-        <div class="card-title">House Materials</div>
-        <div class="card-subtitle">Construction materials used</div>
-        {% if material_data %}
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Material</th><th class="text-right">Households</th></tr></thead>
-            <tbody>
-              {% for item in material_data %}
-              <tr><td>{{ item.house_material }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-          <div class="empty-title">No Data Yet</div>
-          <div class="empty-sub">Add household data to see materials.</div>
-        </div>
-        {% endif %}
+        <div class="card-title">Quick Summary</div>
+        <div class="card-subtitle">Fast status view for people, sectors, and vulnerable groups.</div>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Persons with Disability</td><td class="text-right color-teal fw-700">{{ stats.with_disability }}</td></tr>
+            <tr><td>Labor Force</td><td class="text-right color-teal fw-700">{{ stats.labor_force }}</td></tr>
+            <tr><td>Unemployed</td><td class="text-right color-teal fw-700">{{ stats.unemployed }}</td></tr>
+            <tr><td>OFWs</td><td class="text-right color-teal fw-700">{{ stats.ofw }}</td></tr>
+            <tr><td>Solo Parents</td><td class="text-right color-teal fw-700">{{ stats.solo_parents }}</td></tr>
+            <tr><td>Children</td><td class="text-right color-teal fw-700">{{ vulnerable.children }}</td></tr>
+            <tr><td>Senior Citizens</td><td class="text-right color-teal fw-700">{{ vulnerable.seniors }}</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="two-col">
       <div class="card">
-        <div class="card-title">Population by Age Group with Disability Status</div>
-        <div class="card-subtitle">Residents grouped by age range</div>
+        <div class="card-title">Live Infrastructure Updates</div>
+        <div class="card-subtitle">Buildings, facilities, and roads feed into this list after every update.</div>
+        {% if infrastructure_updates %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Category</th><th>Details</th></tr></thead>
+              <tbody>
+                {% for item in infrastructure_updates %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.detail }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No infrastructure updates yet</div>
+            <div class="empty-sub">Add buildings, facilities, or roads to see live output here.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Live Institution Updates</div>
+        <div class="card-subtitle">Institutions, medical staff, and professionals appear here automatically.</div>
+        {% if institution_updates %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Details</th></tr></thead>
+              <tbody>
+                {% for item in institution_updates %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.role }}</td>
+                    <td>{{ item.detail }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No institution updates yet</div>
+            <div class="empty-sub">Add institution records to make the live output appear here.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="analytics" class="card">
+      <div class="card-title">Reports and Analytics</div>
+      <div class="card-subtitle">The old reports section is now built into this dashboard for easier monitoring.</div>
+      <div class="two-col" style="margin-bottom:0;">
         <div class="table-wrap">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Age Group</th>
-                <th class="text-right">Without Disability</th>
-                <th class="text-right">With Disability</th>
-                <th class="text-right">Total</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Age Group</th><th class="text-right">Without Disability</th><th class="text-right">With Disability</th><th class="text-right">Total</th></tr></thead>
             <tbody>
               {% for group in age_groups %}
-              <tr>
-                <td>{{ group.label }}</td>
-                <td class="text-right">{{ group.without }}</td>
-                <td class="text-right">{{ group.with_disability }}</td>
-                <td class="text-right color-teal fw-700">{{ group.total }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-            <tfoot>
-              <tr style="border-top:2px solid #eaf2f6;">
-                <td class="fw-700" style="padding-top:12px;">Total Population</td>
-                <td class="text-right fw-700" style="padding-top:12px;">{{ stats.without_disability }}</td>
-                <td class="text-right fw-700" style="padding-top:12px;">{{ stats.with_disability }}</td>
-                <td class="text-right fw-700 color-teal" style="padding-top:12px; font-size:16px;">{{ stats.total_population }}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">LGBTQ+ Community</div>
-        <div class="card-subtitle">Identified members in the barangay</div>
-        {% if lgbtq_data %}
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Type</th><th class="text-right">Count</th></tr></thead>
-            <tbody>
-              {% for item in lgbtq_data %}
-              <tr><td>{{ item.lgbtq_type }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                <tr>
+                  <td>{{ group.label }}</td>
+                  <td class="text-right">{{ group.without }}</td>
+                  <td class="text-right">{{ group.with_disability }}</td>
+                  <td class="text-right color-teal fw-700">{{ group.total }}</td>
+                </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-        {% else %}
-        <div class="empty-state">
-          <div class="empty-title">No Data Yet</div>
-          <div class="empty-sub">Add residents to see LGBTQ+ data.</div>
-        </div>
-        {% endif %}
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-title">Population by Sector</div>
-      <div class="card-subtitle">Key demographic sectors and civil status breakdown</div>
-      <div class="two-col" style="margin-bottom:0;">
         <div class="table-wrap">
           <table class="data-table">
             <thead><tr><th>Sector</th><th class="text-right">Count</th></tr></thead>
             <tbody>
-              <tr><td>Labor Force</td><td class="text-right color-teal fw-700">{{ stats.labor_force }}</td></tr>
-              <tr><td>Unemployed</td><td class="text-right color-teal fw-700">{{ stats.unemployed }}</td></tr>
-              <tr><td>Out of School Children (OSC) 6-14 yrs</td><td class="text-right color-teal fw-700">{{ stats.osc }}</td></tr>
-              <tr><td>Out of School Youth (OSY) 15-24 yrs</td><td class="text-right color-teal fw-700">{{ stats.osy }}</td></tr>
-              <tr><td>Persons with Disabilities (PWDs)</td><td class="text-right color-teal fw-700">{{ stats.with_disability }}</td></tr>
-              <tr><td>Overseas Filipino Workers (OFWs)</td><td class="text-right color-teal fw-700">{{ stats.ofw }}</td></tr>
-              <tr><td>Solo Parents</td><td class="text-right color-teal fw-700">{{ stats.solo_parents }}</td></tr>
-              <tr><td>Indigenous Peoples (IPs)</td><td class="text-right color-teal fw-700">{{ stats.indigenous }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div>
-          <p class="settings-label" style="margin-bottom:10px;">Civil Status</p>
-          <table class="data-table" style="margin-bottom:18px;">
-            <tbody>
-              <tr><td>Married</td><td class="text-right">{{ stats.married }}</td></tr>
-              <tr><td>Single</td><td class="text-right">{{ stats.single }}</td></tr>
-              <tr><td>Widowed</td><td class="text-right">{{ stats.widowed }}</td></tr>
-              <tr><td>Separated</td><td class="text-right">{{ stats.separated }}</td></tr>
-            </tbody>
-          </table>
-          <p class="settings-label" style="margin-bottom:10px;">Citizenship</p>
-          <table class="data-table">
-            <tbody>
-              <tr><td>Filipino</td><td class="text-right">{{ stats.filipino }}</td></tr>
-              <tr><td>Foreigner</td><td class="text-right">{{ stats.foreigner }}</td></tr>
+              {% for label, count in sectors %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td class="text-right color-teal fw-700">{{ count }}</td>
+                </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Quick Actions</div>
-      <div class="card-subtitle">Shortcuts to common tasks</div>
-      <div class="flex flex-wrap gap-8 mt-8">
-        <a href="{% url 'residents' %}" class="btn btn-primary">Add Resident</a>
-        <a href="{% url 'reports' %}" class="btn btn-outline">Generate Report</a>
-        <a href="{% url 'facilities' %}" class="btn btn-outline">Update Facilities</a>
-        <a href="{% url 'institutions' %}" class="btn btn-outline">Manage Institutions</a>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Livelihood Output</div>
+        <div class="card-subtitle">Updated automatically from resident records.</div>
+        {% if livelihood_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Livelihood</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                {% for item in livelihood_data %}
+                  <tr><td>{{ item.livelihood }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No livelihood data yet</div>
+            <div class="empty-sub">Add residents with livelihood data to populate this report.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">House Material Output</div>
+        <div class="card-subtitle">Pulled from household records and shown with every dashboard refresh.</div>
+        {% if material_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Material</th><th class="text-right">Households</th></tr></thead>
+              <tbody>
+                {% for item in material_data %}
+                  <tr><td>{{ item.house_material }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No house material data yet</div>
+            <div class="empty-sub">Household material records will appear here once available.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">LGBTQ+ Output</div>
+        <div class="card-subtitle">Resident updates flow into this table automatically.</div>
+        {% if lgbtq_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Type</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                {% for item in lgbtq_data %}
+                  <tr><td>{{ item.lgbtq_type }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No LGBTQ+ data yet</div>
+            <div class="empty-sub">This section will fill in as resident profiles are updated.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Utility Snapshot</div>
+        <div class="card-subtitle">Latest utility settings from the Facilities page.</div>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Electricity</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.electricity }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Water Supply</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.water_supply }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Waste Management</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.waste_management }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Toilets</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.toilet_count }}{% else %}0{% endif %}</td></tr>
+            <tr><td>Baths</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.bath_count }}{% else %}0{% endif %}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Facility Output</div>
+        <div class="card-subtitle">New facilities and buildings stay visible from the integrated dashboard.</div>
+        {% if recent_buildings or recent_facilities or land_bodies or water_bodies %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Type</th><th>Name</th><th>Details</th></tr></thead>
+              <tbody>
+                {% for item in recent_buildings %}
+                  <tr><td>Building</td><td class="fw-700">{{ item.name }}</td><td>{{ item.building_type }} | {{ item.status }}</td></tr>
+                {% endfor %}
+                {% for item in recent_facilities %}
+                  <tr><td>Facility</td><td class="fw-700">{{ item.name }}</td><td>{{ item.facility_type }} | Qty {{ item.quantity }}</td></tr>
+                {% endfor %}
+                {% for item in land_bodies %}
+                  <tr><td>Land</td><td class="fw-700">{{ item.name }}</td><td>{{ item.land_type }}</td></tr>
+                {% endfor %}
+                {% for item in water_bodies %}
+                  <tr><td>Water</td><td class="fw-700">{{ item.name }}</td><td>{{ item.water_type }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No facility output yet</div>
+            <div class="empty-sub">Facility-related records will appear here as soon as they are added.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Institution Output</div>
+        <div class="card-subtitle">Institution and staffing records stay visible from the same dashboard.</div>
+        {% if recent_institutions or recent_medical_staff or recent_professionals %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Type</th><th>Name</th><th>Details</th></tr></thead>
+              <tbody>
+                {% for item in recent_institutions %}
+                  <tr><td>Institution</td><td class="fw-700">{{ item.name }}</td><td>{{ item.members }} members | {{ item.status }}</td></tr>
+                {% endfor %}
+                {% for item in recent_medical_staff %}
+                  <tr><td>Medical Staff</td><td class="fw-700">{{ item.full_name }}</td><td>{{ item.position }}</td></tr>
+                {% endfor %}
+                {% for item in recent_professionals %}
+                  <tr><td>Professional</td><td class="fw-700">{{ item.full_name }}</td><td>{{ item.profession }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No institution output yet</div>
+            <div class="empty-sub">Add institutions or staff records to populate this section.</div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
