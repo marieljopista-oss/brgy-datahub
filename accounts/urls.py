@@ -37,9 +37,11 @@ urlpatterns = [
     path('institutions/delete/<str:itype>/<int:pk>/', views.institution_delete, name='institution_delete'),
 
     # ─────────────────────────────────────────
-    #  REPORTS — CSV EXPORT
-    #  dtype: residents
-    # ─────────────────────────────────────────
+ # HOUSEHOLDS
+    path('households/add/',             views.household_add,    name='household_add'),
+    path('households/edit/<int:pk>/',   views.household_edit,   name='household_edit'),
+    path('households/delete/<int:pk>/', views.household_delete, name='household_delete'),
+    # ─────# HOUSEHOLDS
     path('reports/export/csv/<str:dtype>/', views.export_csv, name='export_csv'),
 
     # ─────────────────────────────────────────
@@ -48,7 +50,9 @@ urlpatterns = [
     path('settings/profile/save/',          views.settings_save_profile,  name='settings_save_profile'),
     path('settings/barangay/save/',         views.settings_save_barangay, name='settings_save_barangay'),
     path('settings/users/add/',             views.settings_add_user,      name='settings_add_user'),
+    path('settings/backup/',                views.settings_backup,        name='settings_backup'),
     path('settings/users/delete/<int:pk>/', views.settings_delete_user,   name='settings_delete_user'),
+    path("settings/restore/", views.settings_restore, name="settings_restore"),
 
     # ─────────────────────────────────────────
     #  PROFILE ACTIONS

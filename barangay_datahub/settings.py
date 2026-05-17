@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from django.contrib.messages import constants as message_constants
 
@@ -50,25 +49,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'barangay_datahub.wsgi.application'
 
-if os.environ.get('DB_ENGINE', '').lower() == 'postgresql':
-    DATABASES = {
-        'default': {
+DATABASES = {
+       'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'brgy_datahub_db'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'NAME': 'brgy_datahub_db',
+            'USER': 'postgres',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '5432',
         }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-
+}
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',

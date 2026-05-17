@@ -37,13 +37,19 @@
         <span class="menu-desc">Profiles &amp; Records</span>
       </a>
 
-      <a href="{% url 'reports' %}" class="menu-btn">
-        <span class="menu-icon">&#128196;</span>
-        <span class="menu-label">Reports</span>
-        <span class="menu-desc">Opens the Analytics section in Dashboard</span>
+      <a href="{% url 'facilities' %}" class="menu-btn">
+        <span class="menu-icon">&#127959;</span>
+        <span class="menu-label">Facilities</span>
+        <span class="menu-desc">Buildings, Roads &amp; Infrastructure</span>
       </a>
 
-      <a href="{% url 'settings' %}" class="menu-btn">
+      <a href="{% url 'institutions' %}" class="menu-btn">
+        <span class="menu-icon">&#127970;</span>
+        <span class="menu-label">Institutions</span>
+        <span class="menu-desc">Organizations &amp; Human Resources</span>
+      </a>
+
+      <a href="{% url 'settings' %}" class="menu-btn" style="grid-column: 1 / -1;">
         <span class="menu-icon">&#9881;</span>
         <span class="menu-label">Settings</span>
         <span class="menu-desc">Config &amp; Users</span>

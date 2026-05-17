@@ -230,7 +230,7 @@
                               )" title="Edit">✏️</button>
                       <form method="POST" action="{% url 'household_delete' hh.id %}"
                             style="display:inline;"
-                            onsubmit="return confirm('Delete Household {{ hh.household_id|escapejs }}? Members will be unlinked.');">
+                            onsubmit="return confirm ('Delete Household {{ hh.household_id|escapejs }}? Members will be unlinked.');">
                         {% csrf_token %}
                         <button type="submit" class="icon-btn icon-delete" title="Delete">🗑️</button>
                       </form>

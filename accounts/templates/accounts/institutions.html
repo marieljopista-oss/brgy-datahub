@@ -162,7 +162,7 @@
               <tbody>
                 {% for item in medical_staff %}
                   <tr>
-                    <td class="fw-700">{{ item.full_name }}</td>
+                    <td class="fw-700">{{ item.name }}</td>
                     <td>{{ item.position }}</td>
                     <td>{% if item.contact %}{{ item.contact }}{% else %}<span class="na">N/A</span>{% endif %}</td>
                     <td>
@@ -218,7 +218,7 @@
               <tbody>
                 {% for item in professionals %}
                   <tr>
-                    <td class="fw-700">{{ item.full_name }}</td>
+                    <td class="fw-700">{{ item.name }}</td>
                     <td>{{ item.profession }}</td>
                     <td>{% if item.contact %}{{ item.contact }}{% else %}<span class="na">N/A</span>{% endif %}</td>
                     <td>

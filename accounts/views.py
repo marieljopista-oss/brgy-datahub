@@ -1,5 +1,7 @@
 from datetime import date
 import csv
+import zipfile
+import io
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -138,7 +140,7 @@ def dashboard(request):
     professionals = Professional.objects.all()
     utility = Utility.objects.first()
     total = residents.count()
-
+   
     age_groups = []
     age_dis = {g: {"without": 0, "with_disability": 0} for g in AGE_GROUP_ORDER}
     for resident in residents:
@@ -210,7 +212,7 @@ def dashboard(request):
         "osy": sum(1 for resident in residents if resident.is_unemployed and 15 <= resident.age <= 24),
     }
 
-    sectors = [
+    sector_counts = [
         ("Labor Force", stats["labor_force"]),
         ("Unemployed", stats["unemployed"]),
         ("Out of School Children (OSC) 6-14 yrs", stats["osc"]),
@@ -221,6 +223,23 @@ def dashboard(request):
         ("Indigenous Peoples (IPs)", stats["indigenous"]),
         ("LGBTQ+ Members", residents.exclude(lgbtq_type="").count()),
     ]
+
+    sector_data = [
+        {
+            "label": label,
+            "count": count,
+            "percentage": round((count / total * 100), 1) if total else 0,
+        }
+        for label, count in sector_counts
+    ]
+
+    gender_data = {
+    "male": residents.filter(gender="Male").count(),
+    "female": residents.filter(gender="Female").count(),
+    }
+    dis_male = residents.filter(gender="Male", has_disability=True).count()
+    dis_female = residents.filter(gender="Female", has_disability=True).count()
+
 
     vulnerable = {
         "pwds": stats["with_disability"],
@@ -240,8 +259,8 @@ def dashboard(request):
 
     institution_updates = (
         [{"name": item.name, "role": "Institution", "detail": f"{item.members} members | {item.status}"} for item in institutions_qs.order_by("-id")[:5]]
-        + [{"name": item.full_name, "role": "Medical Staff", "detail": item.position} for item in medical_staff.order_by("-id")[:5]]
-        + [{"name": item.full_name, "role": "Professional", "detail": item.profession} for item in professionals.order_by("-id")[:5]]
+        + [{"name": item.name, "role": "Medical Staff", "detail": item.position} for item in medical_staff.order_by("-id")[:5]]
+        + [{"name": item.name, "role": "Professional", "detail": item.profession} for item in professionals.order_by("-id")[:5]]
     )[:8]
 
     return render(
@@ -253,8 +272,12 @@ def dashboard(request):
             "livelihood_data": livelihood_data,
             "lgbtq_data": lgbtq_data,
             "material_data": material_data,
-            "sectors": sectors,
+            "sector_data": sector_data,
             "vulnerable": vulnerable,
+            "gender_data": gender_data,
+            "dis_male": dis_male,
+            "dis_female": dis_female,
+
             "utility": utility,
             "recent_residents": residents.order_by("-updated_at")[:8],
             "infrastructure_updates": infrastructure_updates,
@@ -360,6 +383,48 @@ def resident_import(request):
     messages.info(request, "Resident import is not implemented yet.")
     return redirect("residents")
 
+@login_required
+def household_add(request):
+    if request.method == 'POST':
+        p = request.POST
+        hh_id = p.get('household_id', '').strip()
+        if not hh_id:
+            messages.error(request, 'Household number is required.')
+            return redirect('residents')
+        if Household.objects.filter(household_id=hh_id).exists():
+            messages.error(request, f'Household "{hh_id}" already exists.')
+            return redirect('residents')
+        Household.objects.create(
+            household_id   = hh_id,
+            head           = p.get('head', '').strip(),
+            ownership      = p.get('ownership', ''),
+            house_material = p.get('house_material', ''),
+        )
+        messages.success(request, f'Household {hh_id} added.')
+    return redirect('residents')
+
+
+@login_required
+def household_edit(request, pk):
+    hh = get_object_or_404(Household, pk=pk)
+    if request.method == 'POST':
+        p = request.POST
+        hh.head           = p.get('head', '').strip()
+        hh.ownership      = p.get('ownership', '')
+        hh.house_material = p.get('house_material', '')
+        hh.save()
+        messages.success(request, f'Household {hh.household_id} updated.')
+    return redirect('residents')
+
+
+@login_required
+def household_delete(request, pk):
+    hh = get_object_or_404(Household, pk=pk)
+    if request.method == 'POST':
+        hh_id = hh.household_id
+        hh.delete()
+        messages.success(request, f'Household {hh_id} deleted.')
+    return redirect('residents')
 
 @login_required
 def facilities(request):
@@ -489,19 +554,21 @@ def institution_add(request, itype):
                 status=request.POST.get("status", "Active"),
                 programs=request.POST.get("programs", ""),
             )
+
         elif itype == "medical":
             MedicalStaff.objects.create(
-                full_name=request.POST["full_name"],
+                name=request.POST["full_name"],
                 position=request.POST["position"],
                 contact=request.POST.get("contact", ""),
             )
+
         elif itype == "professional":
             Professional.objects.create(
-                full_name=request.POST["full_name"],
+                name=request.POST["full_name"],
                 profession=request.POST["profession"],
                 contact=request.POST.get("contact", ""),
             )
-        messages.success(request, "Institution data saved.")
+        messages.success(request, "Data has been saved.")
 
     tab_map = {
         "institution": "institutions",
@@ -509,7 +576,6 @@ def institution_add(request, itype):
         "professional": "professionals",
     }
     return _redirect_with_tab("institutions", tab_map.get(itype, "institutions"))
-
 
 @login_required
 def institution_delete(request, itype, pk):
@@ -571,10 +637,9 @@ def export_csv(request, dtype):
         for institution in Institution.objects.all():
             writer.writerow(["Institution", institution.name, institution.members, institution.status])
         for staff in MedicalStaff.objects.all():
-            writer.writerow(["Medical", staff.full_name, staff.position, ""])
+            writer.writerow(["Medical", staff.name, staff.position, ""])
         for professional in Professional.objects.all():
-            writer.writerow(["Professional", professional.full_name, professional.profession, ""])
-
+            writer.writerow(["Professional", professional.name, professional.profession, ""])
     return response
 
 
@@ -611,6 +676,76 @@ def settings_save_barangay(request):
         messages.success(request, "Barangay information saved.")
     return redirect("settings")
 
+@login_required
+def settings_backup(request):
+    buffer = io.BytesIO()
+
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+
+        def write_csv(filename, headers, rows):
+            out = io.StringIO()
+            writer = csv.writer(out)
+            writer.writerow(headers)
+            writer.writerows(rows)
+            zf.writestr(filename, out.getvalue())
+
+        write_csv("residents.csv",
+            ["ID","First Name","Last Name","Birth Date","Gender","Household","Livelihood","Disability","Civil Status","Citizenship","OFW","Solo Parent","Indigenous","LGBTQ"],
+            [(r.id, r.first_name, r.last_name, r.birth_date, r.gender,
+              r.household.household_id if r.household else "",
+              r.livelihood, r.has_disability, r.civil_status, r.citizenship,
+              r.is_ofw, r.is_solo_parent, r.is_indigenous, r.lgbtq_type)
+             for r in Resident.objects.select_related("household").all()])
+
+        write_csv("households.csv",
+            ["ID","Household ID","Head","Ownership","Material"],
+            [(h.id, h.household_id, h.head, h.ownership, h.house_material)
+             for h in Household.objects.all()])
+
+        write_csv("buildings.csv",
+            ["ID","Name","Type","Status"],
+            [(b.id, b.name, b.building_type, b.status)
+             for b in Building.objects.all()])
+
+        write_csv("facilities.csv",
+            ["ID","Name","Type","Quantity"],
+            [(f.id, f.name, f.facility_type, f.quantity)
+             for f in Facility.objects.all()])
+
+        write_csv("roads.csv",
+            ["ID","Type","Length (km)","Status"],
+            [(r.id, r.road_type, r.length_km, r.status)
+             for r in RoadNetwork.objects.all()])
+
+        write_csv("land_bodies.csv",
+            ["ID","Name","Type","Area (ha)"],
+            [(l.id, l.name, l.land_type, l.area_ha)
+             for l in LandBody.objects.all()])
+
+        write_csv("water_bodies.csv",
+            ["ID","Name","Type","Description"],
+            [(w.id, w.name, w.water_type, w.description)
+             for w in WaterBody.objects.all()])
+
+        write_csv("institutions.csv",
+            ["ID","Name","President","Members","Status","Programs"],
+            [(i.id, i.name, i.president, i.members, i.status, i.programs)
+             for i in Institution.objects.all()])
+
+        write_csv("medical_staff.csv",
+            ["ID","Name","Position","Contact"],
+            [(m.id, m.name, m.position, m.contact)
+             for m in MedicalStaff.objects.all()])
+
+        write_csv("professionals.csv",
+            ["ID","Name","Profession","Contact"],
+            [(p.id, p.name, p.profession, p.contact)
+             for p in Professional.objects.all()])
+
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type="application/zip")
+    response["Content-Disposition"] = 'attachment; filename="barangay_backup.zip"'
+    return response
 
 @login_required
 def settings_add_user(request):
@@ -628,6 +763,125 @@ def settings_add_user(request):
             messages.error(request, "Invalid username or password too short.")
     return redirect("settings")
 
+@login_required
+def settings_restore(request):
+    if request.method == "POST" and request.FILES.get("backup_file"):
+        import zipfile
+        import io
+
+        f = request.FILES["backup_file"]
+        try:
+            with zipfile.ZipFile(f, 'r') as zf:
+                def read_csv(filename):
+                    if filename in zf.namelist():
+                        content = zf.read(filename).decode("utf-8")
+                        reader = csv.DictReader(io.StringIO(content))
+                        return list(reader)
+                    return []
+
+                # Clear and restore each model
+                Resident.objects.all().delete()
+                Household.objects.all().delete()
+                Building.objects.all().delete()
+                Facility.objects.all().delete()
+                RoadNetwork.objects.all().delete()
+                LandBody.objects.all().delete()
+                WaterBody.objects.all().delete()
+                Institution.objects.all().delete()
+                MedicalStaff.objects.all().delete()
+                Professional.objects.all().delete()
+
+                for row in read_csv("households.csv"):
+                    Household.objects.create(
+                        household_id=row["Household ID"],
+                        head=row["Head"],
+                        ownership=row["Ownership"],
+                        house_material=row["Material"],
+                    )
+
+                for row in read_csv("buildings.csv"):
+                    Building.objects.create(
+                        name=row["Name"],
+                        building_type=row["Type"],
+                        status=row["Status"],
+                    )
+
+                for row in read_csv("facilities.csv"):
+                    Facility.objects.create(
+                        name=row["Name"],
+                        facility_type=row["Type"],
+                        quantity=row["Quantity"],
+                    )
+
+                for row in read_csv("roads.csv"):
+                    RoadNetwork.objects.create(
+                        road_type=row["Type"],
+                        length_km=row["Length (km)"],
+                        status=row["Status"],
+                    )
+
+                for row in read_csv("land_bodies.csv"):
+                    LandBody.objects.create(
+                        name=row["Name"],
+                        land_type=row["Type"],
+                        area_ha=row["Area (ha)"] or None,
+                    )
+
+                for row in read_csv("water_bodies.csv"):
+                    WaterBody.objects.create(
+                        name=row["Name"],
+                        water_type=row["Type"],
+                        description=row["Description"],
+                    )
+
+                for row in read_csv("institutions.csv"):
+                    Institution.objects.create(
+                        name=row["Name"],
+                        president=row["President"],
+                        members=row["Members"],
+                        status=row["Status"],
+                        programs=row["Programs"],
+                    )
+
+                for row in read_csv("medical_staff.csv"):
+                    MedicalStaff.objects.create(
+                        name=row["Name"],
+                        position=row["Position"],
+                        contact=row["Contact"],
+                    )
+
+                for row in read_csv("professionals.csv"):
+                    Professional.objects.create(
+                        name=row["Name"],
+                        profession=row["Profession"],
+                        contact=row["Contact"],
+                    )
+
+                for row in read_csv("residents.csv"):
+                    hh = Household.objects.filter(
+                        household_id=row["Household"]
+                    ).first() if row["Household"] else None
+                    Resident.objects.create(
+                        first_name=row["First Name"],
+                        last_name=row["Last Name"],
+                        birth_date=row["Birth Date"],
+                        gender=row["Gender"],
+                        household=hh,
+                        livelihood=row["Livelihood"],
+                        has_disability=row["Disability"] == "True",
+                        civil_status=row["Civil Status"],
+                        citizenship=row["Citizenship"],
+                        is_ofw=row["OFW"] == "True",
+                        is_solo_parent=row["Solo Parent"] == "True",
+                        is_indigenous=row["Indigenous"] == "True",
+                        lgbtq_type=row["LGBTQ"],
+                    )
+
+            messages.success(request, "Backup restored successfully.")
+        except Exception as e:
+            messages.error(request, f"Restore failed: {e}")
+
+    return redirect("settings")
 
 @login_required
 def settings_delete_user(request, pk):

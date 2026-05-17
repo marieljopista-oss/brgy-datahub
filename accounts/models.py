@@ -97,6 +97,7 @@ class Resident(models.Model):
 
     # Core fields
     first_name  = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True)
     last_name   = models.CharField(max_length=100)
     birth_date  = models.DateField(default='2000-01-01')
     gender      = models.CharField(max_length=10, choices=GENDER_CHOICES)
@@ -149,7 +150,7 @@ class LandBody(models.Model):
         ('Industrial',   'Industrial'),
     ]
     name  = models.CharField(max_length=100)
-    land_type  = models.CharField(max_length=20, choices=LAND_TYPES)
+    land_type  = models.CharField(max_length=20, choices=LAND_TYPE_CHOICES)
     area_ha  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -276,7 +277,7 @@ class MedicalStaff(models.Model):
         ('Dentist', 'Dentist'),
     ]
     name       = models.CharField(max_length=100)
-    position  = models.CharField(max_length=20, choices=POSITIONS)
+    position  = models.CharField(max_length=20, choices= POSITION_CHOICES)
     contact  = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -295,7 +296,7 @@ class Professional(models.Model):
         ('Farmer', 'Farmer'),
     ]
     name      = models.CharField(max_length=100)
-    profession = models.CharField(max_length=20, choices=PROFESSIONS)
+    profession = models.CharField(max_length=20, choices=PROFESSION_CHOICES)
     contact = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
