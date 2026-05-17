@@ -111,21 +111,21 @@
                             onclick="openEdit(
                               {{ resident.id }},
                               '{{ resident.first_name|escapejs }}',
-                              '{{ resident.middle_name|default:""|escapejs }}',
+                              '{{ resident.middle_name|default:"" |escapejs }}',
                               '{{ resident.last_name|escapejs }}',
                               '{{ resident.birth_date|escapejs }}',
                               '{{ resident.gender|escapejs }}',
-                              '{{ resident.livelihood|default:""|escapejs }}',
+                              '{{ resident.livelihood|default:"" |escapejs }}',
                               {{ resident.has_disability|yesno:"true,false" }},
-                              '{{ resident.lgbtq_type|default:""|escapejs }}',
+                              '{{ resident.lgbtq_type|default:"" |escapejs }}',
                               {{ resident.in_labor_force|yesno:"true,false" }},
                               {{ resident.is_unemployed|yesno:"true,false" }},
                               {{ resident.is_ofw|yesno:"true,false" }},
                               {{ resident.is_solo_parent|yesno:"true,false" }},
                               {{ resident.is_indigenous|yesno:"true,false" }},
-                              '{{ resident.civil_status|default:""|escapejs }}',
-                              '{{ resident.citizenship|default:"Filipino"|escapejs }}',
-                              '{{ resident.household_id|default:""|escapejs }}'
+                              '{{ resident.civil_status|default:"" |escapejs }}',
+                              '{{ resident.citizenship|default:"Filipino" |escapejs }}',
+                              '{{ resident.household_id|default:"" |escapejs }}'
                             )"
                             title="Edit">✏️</button>
                     <form method="POST" action="{% url 'resident_delete' resident.id %}"
@@ -223,10 +223,10 @@
                               onclick="openHouseholdEdit(
                                 {{ hh.id }},
                                 '{{ hh.household_id|escapejs }}',
-                                '{{ hh.head|default:""|escapejs }}',
-                                '{{ hh.address|default:""|escapejs }}',
-                                '{{ hh.ownership|default:""|escapejs }}',
-                                '{{ hh.house_material|default:""|escapejs }}'
+                                '{{ hh.head|default:"" | escapejs }}',
+                                '{{ hh.address|default:"" |escapejs }}',
+                                '{{ hh.ownership|default:"" |escapejs }}',
+                                '{{ hh.house_material|default:"" |escapejs }}'
                               )" title="Edit">✏️</button>
                       <form method="POST" action="{% url 'household_delete' hh.id %}"
                             style="display:inline;"
