@@ -1,0 +1,325 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub - Integrated Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  <style>
+  .data-table td, .data-table th { text-align: left; }
+  .data-table td:first-child, .data-table th:first-child { text-align: left; }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">&#8592;</a>
+      <span class="topbar-badge">DASHBOARD & REPORTS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Integrated Dashboard and Reports</h1>
+      <p>Live overview of {% if barangay and barangay.name %}{{ barangay.name }}{% else %}your barangay{% endif %} with analytics, exports, and latest updates in one place.</p>
+    </div>
+    <div class="flex gap-8 flex-wrap" style="margin-top:6px;">
+      <a href="{% url 'residents' %}" class="btn btn-primary">Add Resident</a>
+      <button class="btn btn-outline" onclick="window.print()">&#128438;&#65039; Print</button>
+      <a href="{% url 'export_csv' 'residents' %}" class="btn btn-outline">&#11015; Export Residents</a>
+      <a href="{% url 'export_csv' 'facilities' %}" class="btn btn-outline">&#11015; Export Facilities</a>
+      <a href="{% url 'export_csv' 'institutions' %}" class="btn btn-outline">&#11015; Export Institutions</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- ── STAT CARDS ─────────────────────────────────────────── -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">&#128101;</div>
+        <div class="stat-label">Population</div>
+        <div class="stat-number">{{ stats.total_population }}</div>
+        <div class="stat-sub">Male: {{ stats.male }} | Female: {{ stats.female }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127968;</div>
+        <div class="stat-label">Households</div>
+        <div class="stat-number">{{ stats.total_households }}</div>
+        <div class="stat-sub">Owned: {{ stats.owned }} | Rented: {{ stats.rented }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#9855;</div>
+        <div class="stat-label">Persons with Disability</div>
+        <div class="stat-number">{{ stats.with_disability }}</div>
+        <div class="stat-sub">Labor Force: {{ stats.labor_force }} | Unemployed: {{ stats.unemployed }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128106;</div>
+        <div class="stat-label">Vulnerable Groups</div>
+        <div class="stat-number">{{ vulnerable.children|add:vulnerable.seniors }}</div>
+        <div class="stat-sub">Children: {{ vulnerable.children }} | Seniors: {{ vulnerable.seniors }}</div>
+      </div>
+    </div>
+
+    <!-- ── LIVE RESIDENT UPDATES + QUICK SUMMARY ─────────────── -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Live Resident Updates</div>
+        <div class="card-subtitle">New and updated residents appear here automatically.</div>
+        {% if recent_residents %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Age</th><th>Gender</th><th>Livelihood</th></tr></thead>
+              <tbody>
+                {% for resident in recent_residents %}
+                  <tr>
+                    <td class="fw-700">{{ resident.full_name }}</td>
+                    <td>{{ resident.age }}</td>
+                    <td>{{ resident.gender }}</td>
+                    <td>{% if resident.livelihood %}{{ resident.livelihood }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No resident updates yet</div>
+            <div class="empty-sub">New residents will be reflected here once records are added.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Quick Summary</div>
+        <div class="card-subtitle">Fast status view for people, sectors, and vulnerable groups.</div>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Persons with Disability</td><td class="text-right color-teal fw-700">{{ stats.with_disability }}</td></tr>
+            <tr><td>Labor Force</td><td class="text-right color-teal fw-700">{{ stats.labor_force }}</td></tr>
+            <tr><td>Unemployed</td><td class="text-right color-teal fw-700">{{ stats.unemployed }}</td></tr>
+            <tr><td>OFWs</td><td class="text-right color-teal fw-700">{{ stats.ofw }}</td></tr>
+            <tr><td>Solo Parents</td><td class="text-right color-teal fw-700">{{ stats.solo_parents }}</td></tr>
+            <tr><td>Children</td><td class="text-right color-teal fw-700">{{ vulnerable.children }}</td></tr>
+            <tr><td>Senior Citizens</td><td class="text-right color-teal fw-700">{{ vulnerable.seniors }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── AGE GROUP + GENDER ─────────────────────────────────── -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Population by Age Group</div>
+        <div class="card-subtitle">Distribution of residents across age ranges.</div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Age Group</th><th class="text-right">Without Disability</th><th class="text-right">With Disability</th><th class="text-right">Total</th></tr></thead>
+            <tbody>
+              {% for group in age_groups %}
+                <tr>
+                  <td>{{ group.label }}</td>
+                  <td class="text-right">{{ group.without }}</td>
+                  <td class="text-right">{{ group.with_disability }}</td>
+                  <td class="text-right color-teal fw-700">{{ group.total }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gender Distribution</div>
+        <div class="card-subtitle">Population breakdown by gender.</div>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Male</td><td class="text-right color-teal fw-700">{{ gender_data.male }}</td></tr>
+            <tr><td>Female</td><td class="text-right color-teal fw-700">{{ gender_data.female }}</td></tr>
+            <tr><td>Male with Disability</td><td class="text-right">{{ dis_male }}</td></tr>
+            <tr><td>Female with Disability</td><td class="text-right">{{ dis_female }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── LIVELIHOOD + HOUSE OWNERSHIP & MATERIALS ───────────── -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Livelihood Distribution</div>
+        <div class="card-subtitle">Top occupations and livelihood data from resident records.</div>
+        {% if livelihood_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Livelihood</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                {% for item in livelihood_data %}
+                  <tr><td>{{ item.livelihood }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No livelihood data yet</div>
+            <div class="empty-sub">Add residents with livelihood data to populate this report.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">House Ownership &amp; Materials</div>
+        <div class="card-subtitle">Ownership type and construction materials from household records.</div>
+        {% if material_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Material</th><th class="text-right">Households</th></tr></thead>
+              <tbody>
+                {% for item in material_data %}
+                  <tr><td>{{ item.house_material }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No house material data yet</div>
+            <div class="empty-sub">Household material records will appear here once available.</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── LGBTQ+ + UTILITY SNAPSHOT ─────────────────────────── -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">LGBTQ+ Output</div>
+        <div class="card-subtitle">Resident updates flow into this table automatically.</div>
+        {% if lgbtq_data %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Type</th><th class="text-right">Count</th></tr></thead>
+              <tbody>
+                {% for item in lgbtq_data %}
+                  <tr><td>{{ item.lgbtq_type }}</td><td class="text-right color-teal fw-700">{{ item.count }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-title">No LGBTQ+ data yet</div>
+            <div class="empty-sub">This section will fill in as resident profiles are updated.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Utility Snapshot</div>
+        <div class="card-subtitle">Latest utility settings from the Facilities page.</div>
+        <table class="data-table">
+          <tbody>
+            <tr><td>Electricity</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.electricity }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Water Supply</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.water_supply }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Waste Management</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.waste_management }}{% else %}N/A{% endif %}</td></tr>
+            <tr><td>Toilets</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.toilet_count }}{% else %}0{% endif %}</td></tr>
+            <tr><td>Baths</td><td class="text-right color-teal fw-700">{% if utility %}{{ utility.bath_count }}{% else %}0{% endif %}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SECTOR SUMMARY + DISASTER PREPAREDNESS ────────────── -->
+    <div class="card">
+      <div class="card-title">Sector Summary</div>
+      <div class="card-subtitle">Complete breakdown of population by sector.</div>
+      <div class="two-col" style="margin-bottom:0;">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Sector</th><th class="text-right">Count</th><th class="text-right">% of Population</th></tr>
+            </thead>
+            <tbody>
+              {% for sector in sector_data %}
+                <tr>
+                  <td>{{ sector.label }}</td>
+                  <td class="text-right">{{ sector.count }}</td>
+                  <td class="text-right">{{ sector.percentage }}%</td>
+                </tr>
+              {% empty %}
+                {% for label, count in sectors %}
+                  <tr>
+                    <td>{{ label }}</td>
+                    <td class="text-right color-teal fw-700">{{ count }}</td>
+                    <td class="text-right">—</td>
+                  </tr>
+                {% empty %}
+                  <tr><td>Labor Force</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Unemployed</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Out of School Children (OSC) 6–14 yrs</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Out of School Youth (OSY) 15–24 yrs</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Persons with Disabilities (PWDs)</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Overseas Filipino Workers (OFWs)</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Solo Parents</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>Indigenous Peoples (IPs)</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                  <tr><td>LGBTQ+ Members</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+                {% endfor %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <p class="settings-label" style="margin-bottom:10px;">Disaster Preparedness</p>
+          {% if evacuation_centers %}
+            <table class="data-table" style="margin-bottom:12px;">
+              <thead><tr><th>Evacuation Center</th><th class="text-right">Capacity</th></tr></thead>
+              <tbody>
+                {% for center in evacuation_centers %}
+                  <tr>
+                    <td>{{ center.name }}</td>
+                    <td class="text-right">{{ center.capacity }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div class="empty-state" style="padding:20px 10px; margin-bottom:12px;">
+              <div class="empty-icon" style="font-size:24px;">&#127957;&#65039;</div>
+              <div class="empty-sub">No evacuation centers added yet.</div>
+            </div>
+          {% endif %}
+          <table class="data-table">
+            <thead><tr><th>Vulnerable Group</th><th class="text-right">Count</th></tr></thead>
+            <tbody>
+              <tr><td>Persons with Disability</td><td class="text-right color-teal fw-700">{{ stats.with_disability }}</td></tr>
+              <tr><td>Children (0–14 yrs)</td><td class="text-right color-teal fw-700">{{ vulnerable.children }}</td></tr>
+              <tr><td>Senior Citizens (60+)</td><td class="text-right color-teal fw-700">{{ vulnerable.seniors }}</td></tr>
+              <tr style="border-top:2px solid #eaf2f6;">
+                <td class="fw-700" style="padding-top:12px;">Total Vulnerable</td>
+                <td class="text-right fw-700 color-teal" style="padding-top:12px; font-size:16px;">
+                  {{ stats.with_disability|add:vulnerable.children|add:vulnerable.seniors }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end page-content -->
+
+  <script src="{% static 'css/app.js' %}"></script>
+
+</body>
+</html>

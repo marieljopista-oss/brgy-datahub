@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub - Home</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/home.css' %}"/>
+</head>
+<body>
+
+  <div class="home-topbar">
+    <div class="home-brand">
+      Barangay DataHub
+      <span>Profiling &amp; Socio-Economic Management System</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar" title="My Profile">&#128100;</a>
+  </div>
+
+  <div class="home-body">
+    <div class="home-welcome">
+      <h2>Welcome back!</h2>
+      <p>Select a module below to manage your barangay data.</p>
+    </div>
+
+    <div class="menu-grid">
+      <a href="{% url 'dashboard' %}" class="menu-btn">
+        <span class="menu-icon">&#128202;</span>
+        <span class="menu-label">Dashboard</span>
+        <span class="menu-desc">Overview, Reports &amp; Live Output</span>
+      </a>
+
+      <a href="{% url 'residents' %}" class="menu-btn">
+        <span class="menu-icon">&#128101;</span>
+        <span class="menu-label">Residents</span>
+        <span class="menu-desc">Profiles &amp; Records</span>
+      </a>
+
+      <a href="{% url 'facilities' %}" class="menu-btn">
+        <span class="menu-icon">&#127959;</span>
+        <span class="menu-label">Facilities</span>
+        <span class="menu-desc">Buildings, Roads &amp; Infrastructure</span>
+      </a>
+
+      <a href="{% url 'institutions' %}" class="menu-btn">
+        <span class="menu-icon">&#127970;</span>
+        <span class="menu-label">Institutions</span>
+        <span class="menu-desc">Organizations &amp; Human Resources</span>
+      </a>
+
+      <a href="{% url 'settings' %}" class="menu-btn" style="grid-column: 1 / -1;">
+        <span class="menu-icon">&#9881;</span>
+        <span class="menu-label">Settings</span>
+        <span class="menu-desc">Config &amp; Users</span>
+      </a>
+    </div>
+  </div>
+
+  <script src="{% static 'css/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub - Institutions</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'dashboard' %}" class="btn-back">&#8592;</a>
+      <span class="topbar-badge">INSTITUTIONS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Institutions and Human Resources</h1>
+      <p>Add institutions, medical staff, and professionals, then see the live output below.</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">&#127970;</div>
+        <div class="stat-label">Institutions</div>
+        <div class="stat-number">{{ institutions|length }}</div>
+        <div class="stat-sub">Community groups and organizations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#129658;</div>
+        <div class="stat-label">Medical Staff</div>
+        <div class="stat-number">{{ medical_staff|length }}</div>
+        <div class="stat-sub">Doctors, nurses, midwives, and workers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128295;</div>
+        <div class="stat-label">Professionals</div>
+        <div class="stat-number">{{ professionals|length }}</div>
+        <div class="stat-sub">Skilled and licensed personnel</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128101;</div>
+        <div class="stat-label">Tracked People</div>
+        <div class="stat-number">{{ tracked_people_total }}</div>
+        <div class="stat-sub">Live output updates after every submit</div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('institutions',this,'inst')">Institutions</button>
+      <button class="tab-btn" onclick="switchTab('medical',this,'inst')">Medical Staff</button>
+      <button class="tab-btn" onclick="switchTab('professionals',this,'inst')">Professionals</button>
+    </div>
+
+    <div id="tab-institutions" class="tab-panel active" data-group="inst">
+      <div class="card">
+        <div class="card-title">Add Institution</div>
+        <div class="card-subtitle">Every saved institution is listed in the output table below.</div>
+        <form method="POST" action="{% url 'institution_add' 'institution' %}" class="card" style="border:1px solid var(--border-soft); margin-bottom:18px;">
+          {% csrf_token %}
+          <div class="two-col" style="margin-bottom:12px;">
+            <div>
+              <label>Organization Name</label>
+              <input type="text" name="name" placeholder="e.g., Women's Association" required/>
+            </div>
+            <div>
+              <label>President or Head</label>
+              <input type="text" name="president" placeholder="Full name"/>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label>Members</label>
+              <input type="number" min="0" name="members" value="0"/>
+            </div>
+            <div>
+              <label>Status</label>
+              <select name="status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div>
+              <label>Programs</label>
+              <input type="text" name="programs" placeholder="e.g., Health, Education"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Add Institution</button>
+        </form>
+
+        {% if institutions %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Organization</th><th>Members</th><th>President</th><th>Status</th><th>Programs</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in institutions %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.members }}</td>
+                    <td>{% if item.president %}{{ item.president }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{% if item.programs %}{{ item.programs }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                    <td>
+                      <form method="POST" action="{% url 'institution_delete' 'institution' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No institutions saved yet</div><div class="empty-sub">Saved institutions will appear here after every update.</div></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="tab-medical" class="tab-panel" data-group="inst">
+      <div class="card">
+        <div class="card-title">Add Medical Staff</div>
+        <div class="card-subtitle">Medical output updates immediately after each save.</div>
+        <form method="POST" action="{% url 'institution_add' 'medical' %}" class="inline-form">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Full Name</label>
+            <input type="text" name="full_name" placeholder="Full name" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Position</label>
+            <select name="position">
+              <option>Doctor</option>
+              <option>Health Worker</option>
+              <option>Nurse</option>
+              <option>Midwife</option>
+              <option>Dentist</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Contact</label>
+            <input type="text" name="contact" placeholder="09XX XXX XXXX"/>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Medical Staff</button>
+        </form>
+
+        {% if medical_staff %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Position</th><th>Contact</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in medical_staff %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.position }}</td>
+                    <td>{% if item.contact %}{{ item.contact }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                    <td>
+                      <form method="POST" action="{% url 'institution_delete' 'medical' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No medical staff saved yet</div><div class="empty-sub">Saved medical staff will appear here after every update.</div></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="tab-professionals" class="tab-panel" data-group="inst">
+      <div class="card">
+        <div class="card-title">Add Professional</div>
+        <div class="card-subtitle">Professional output updates immediately after each save.</div>
+        <form method="POST" action="{% url 'institution_add' 'professional' %}" class="inline-form">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Full Name</label>
+            <input type="text" name="full_name" placeholder="Full name" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Profession</label>
+            <select name="profession">
+              <option>Teacher</option>
+              <option>Carpenter</option>
+              <option>Electrician</option>
+              <option>Plumber</option>
+              <option>Engineer</option>
+              <option>Mechanic</option>
+              <option>Farmer</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Contact</label>
+            <input type="text" name="contact" placeholder="09XX XXX XXXX"/>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Professional</button>
+        </form>
+
+        {% if professionals %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Profession</th><th>Contact</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in professionals %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.profession }}</td>
+                    <td>{% if item.contact %}{{ item.contact }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                    <td>
+                      <form method="POST" action="{% url 'institution_delete' 'professional' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No professionals saved yet</div><div class="empty-sub">Saved professionals will appear here after every update.</div></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const activeTab = params.get('tab');
+    if (activeTab) {
+      const tabButton = Array.from(document.querySelectorAll('.tab-btn')).find((btn) => btn.getAttribute('onclick').includes("'" + activeTab + "'"));
+      if (tabButton) {
+        switchTab(activeTab, tabButton, 'inst');
+      }
+    }
+  </script>
+</body>
+</html>

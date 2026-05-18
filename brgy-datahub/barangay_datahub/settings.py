@@ -1,15 +1,13 @@
 from pathlib import Path
-import os
-import dj_database_url
 from django.contrib.messages import constants as message_constants
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key-change-this')
+SECRET_KEY = 'django-insecure-change-this-in-production-barangay-datahub-2024'
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'brgy-datahub.onrender.com', 'localhost').split(',')
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,7 +21,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -53,12 +50,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'barangay_datahub.wsgi.application'
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600
-    )
+       'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'brgy_datahub_db',
+            'USER': 'postgres',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
 }
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -75,22 +75,24 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
+# ── Media files (profile photo uploads) ──
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = '/home/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL          = '/'
+LOGIN_REDIRECT_URL = '/home/'        # changed: sends user to home after login
+LOGOUT_REDIRECT_URL= '/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-SESSION_COOKIE_AGE = 86400
+# ── Session: keep users logged in for 1 day ──
+SESSION_COOKIE_AGE              = 86400
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+# ── Message tags (for success/error alerts in templates) ──
 MESSAGE_TAGS = {
     message_constants.DEBUG:   'debug',
     message_constants.INFO:    'info',

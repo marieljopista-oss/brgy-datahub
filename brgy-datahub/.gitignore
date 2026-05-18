@@ -1,0 +1,14 @@
+# Ignore the virtual environment folder
+venv/
+.venv/
+env/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore the SQLite database (optional, but common)
+db.sqlite3
+
+# DO NOT use a single * here, as it blocks your whole project!

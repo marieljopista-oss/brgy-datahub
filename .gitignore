@@ -1,14 +1,22 @@
-# Ignore the virtual environment folder
-venv/
-.venv/
-env/
+# Virtual environment
+Lib/
+Scripts/
+pyvenv.cfg
+share/
+etc/
 
-# Ignore Python cache files
+# Python
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
 
-# Ignore the SQLite database (optional, but common)
+# Environment files
+*.env
+.env
+
+# Django generated
+staticfiles/
+media/
 db.sqlite3
 
-# DO NOT use a single * here, as it blocks your whole project!
+# Logs
+*.log

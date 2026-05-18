@@ -1,0 +1,165 @@
+Watching for file changes with StatReloader
+[18/May/2026 07:19:24] "GET / HTTP/1.1" 200 14309
+[18/May/2026 07:19:24,236] - Broken pipe from ('127.0.0.1', 54078)
+[18/May/2026 07:19:39] "GET / HTTP/1.1" 200 14309
+[18/May/2026 07:19:39] "GET /static/css/style.css HTTP/1.1" 304 0
+[18/May/2026 07:19:39] "GET /static/css/barangay_logo.png HTTP/1.1" 200 281632
+[18/May/2026 07:20:07] "POST / HTTP/1.1" 302 0
+[18/May/2026 07:20:07] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:20:07] "GET /static/css/home.css HTTP/1.1" 200 2228
+[18/May/2026 07:20:38] "GET / HTTP/1.1" 200 14309
+[18/May/2026 07:20:38] "GET /static/css/login.css HTTP/1.1" 304 0
+[18/May/2026 07:20:38] "GET /static/css/app.js HTTP/1.1" 304 0
+[18/May/2026 07:20:39] "GET /static/css/style.css HTTP/1.1" 304 0
+[18/May/2026 07:20:39] "GET /static/css/barangay_logo.png HTTP/1.1" 200 281632
+Not Found: /favicon.ico
+[18/May/2026 07:20:39] "GET /favicon.ico HTTP/1.1" 404 8063
+[18/May/2026 07:21:07] "POST / HTTP/1.1" 302 0
+[18/May/2026 07:21:07] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:21:07] "GET /static/css/home.css HTTP/1.1" 304 0
+[18/May/2026 07:21:10] "GET /dashboard/ HTTP/1.1" 200 13451
+[18/May/2026 07:21:37] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:21:38] "GET /residents/ HTTP/1.1" 200 27935
+[18/May/2026 07:21:56] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:21:58] "GET /facilities/ HTTP/1.1" 200 12559
+[18/May/2026 07:22:06] "GET /dashboard/ HTTP/1.1" 200 13451
+[18/May/2026 07:22:13] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:22:14] "GET /facilities/ HTTP/1.1" 200 12559
+[18/May/2026 07:22:17] "GET /dashboard/ HTTP/1.1" 200 13451
+[18/May/2026 07:22:19] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:22:21] "GET /institutions/ HTTP/1.1" 200 7653
+[18/May/2026 07:23:43] "GET /dashboard/ HTTP/1.1" 200 13451
+[18/May/2026 07:23:46] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:23:48] "GET /settings/ HTTP/1.1" 200 11149
+[18/May/2026 07:23:54] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:23:55] "GET /dashboard/ HTTP/1.1" 200 13451
+[18/May/2026 07:24:07] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:24:08] "GET /residents/ HTTP/1.1" 200 27935
+[18/May/2026 07:24:41] "POST /residents/add/ HTTP/1.1" 302 0
+[18/May/2026 07:24:41] "GET /residents/ HTTP/1.1" 200 30219
+[18/May/2026 07:27:40] "POST /households/add/ HTTP/1.1" 302 0
+[18/May/2026 07:27:40] "GET /residents/ HTTP/1.1" 200 32969
+[18/May/2026 07:28:10] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:28:11] "GET /dashboard/ HTTP/1.1" 200 14052
+[18/May/2026 07:28:43] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:28:46] "GET /institutions/ HTTP/1.1" 200 7653
+[18/May/2026 07:29:16] "POST /institutions/add/institution/ HTTP/1.1" 302 0
+[18/May/2026 07:29:16] "GET /institutions/?tab=institutions HTTP/1.1" 200 8625
+[18/May/2026 07:29:28] "POST /institutions/add/medical/ HTTP/1.1" 302 0
+[18/May/2026 07:29:28] "GET /institutions/?tab=medical HTTP/1.1" 200 9360
+[18/May/2026 07:29:59] "POST /institutions/add/professional/ HTTP/1.1" 302 0
+[18/May/2026 07:29:59] "GET /institutions/?tab=professionals HTTP/1.1" 200 10105
+[18/May/2026 07:30:08] "GET /dashboard/ HTTP/1.1" 200 14052
+[18/May/2026 07:30:42] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:30:43] "GET /institutions/ HTTP/1.1" 200 9985
+[18/May/2026 07:30:46] "GET /dashboard/ HTTP/1.1" 200 14052
+[18/May/2026 07:30:51] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:30:52] "GET /residents/ HTTP/1.1" 200 32838
+[18/May/2026 07:31:22] "POST /households/edit/1/ HTTP/1.1" 302 0
+[18/May/2026 07:31:22] "GET /residents/ HTTP/1.1" 200 32971
+[18/May/2026 07:33:02] "GET / HTTP/1.1" 302 0
+[18/May/2026 07:33:02] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:33:07] "GET /profile/ HTTP/1.1" 200 8161
+[18/May/2026 07:33:07] "GET /static/css/profile.css HTTP/1.1" 200 2851
+[18/May/2026 07:33:13] "POST /logout/ HTTP/1.1" 302 0
+[18/May/2026 07:33:13] "GET / HTTP/1.1" 200 14309
+[18/May/2026 07:33:22] "POST / HTTP/1.1" 200 14737
+[18/May/2026 07:33:35] "POST / HTTP/1.1" 302 0
+[18/May/2026 07:33:35] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:33:38] "GET /dashboard/ HTTP/1.1" 200 14052
+[18/May/2026 07:33:42] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:33:45] "GET /facilities/ HTTP/1.1" 200 12559
+[18/May/2026 07:33:49] "GET /dashboard/ HTTP/1.1" 200 14052
+[18/May/2026 07:33:50] "GET /home/ HTTP/1.1" 200 1991
+[18/May/2026 07:33:52] "GET /institutions/ HTTP/1.1" 200 9985
+C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\barangay_datahub\settings.py changed, reloading.
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\base.py", line 412, in run_from_argv
+    self.execute(*args, **cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\commands\runserver.py", line 74, in execute
+    super().execute(*args, **options)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\base.py", line 458, in execute
+    output = self.handle(*args, **options)
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\commands\runserver.py", line 81, in handle
+    if not settings.DEBUG and not settings.ALLOWED_HOSTS:
+           ^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 102, in __getattr__
+    self._setup(name)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 89, in _setup
+    self._wrapped = Settings(settings_module)
+                    ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 217, in __init__
+    mod = importlib.import_module(self.SETTINGS_MODULE)
+  File "C:\Users\LENOVO\AppData\Local\Programs\Python\Python314\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\barangay_datahub\settings.py", line 3, in <module>
+    import dj_database_url
+ModuleNotFoundError: No module named 'dj_database_url'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\manage.py", line 19, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\manage.py", line 15, in main
+    execute_from_command_line(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\core\management\base.py", line 425, in run_from_argv
+    connections.close_all()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\connection.py", line 84, in close_all
+    for conn in self.all(initialized_only=True):
+                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\connection.py", line 78, in all
+    for alias in self
+                 ^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\connection.py", line 73, in __iter__
+    return iter(self.settings)
+                ^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\functional.py", line 57, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\connection.py", line 45, in settings
+    self._settings = self.configure_settings(self._settings)
+                     ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\db\utils.py", line 148, in configure_settings
+    databases = super().configure_settings(databases)
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\utils\connection.py", line 50, in configure_settings
+    settings = getattr(django_settings, self.settings_name)
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 102, in __getattr__
+    self._setup(name)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 89, in _setup
+    self._wrapped = Settings(settings_module)
+                    ~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\Lib\site-packages\django\conf\__init__.py", line 217, in __init__
+    mod = importlib.import_module(self.SETTINGS_MODULE)
+  File "C:\Users\LENOVO\AppData\Local\Programs\Python\Python314\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1406, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "C:\Users\LENOVO\Downloads\Mirimi\major_final\brgy-datahub\barangay_datahub\settings.py", line 3, in <module>
+    import dj_database_url
+ModuleNotFoundError: No module named 'dj_database_url'

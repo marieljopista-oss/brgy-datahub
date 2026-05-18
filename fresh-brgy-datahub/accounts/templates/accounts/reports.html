@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub - Reports</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <span class="topbar-badge">REPORTS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Reports &amp; Analytics</h1>
+      <p>Generate and export barangay reports</p>
+    </div>
+    <div class="flex gap-8 flex-wrap" style="margin-top:6px;">
+      <button class="btn btn-outline" onclick="exportPDF()">⬇️ Export PDF</button>
+      <button class="btn btn-outline" onclick="exportExcel()">⬇️ Export Excel</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+      <a class="btn btn-outline" href="{% url 'export_csv' 'residents' %}">⬇ Export Residents</a>
+      <a class="btn btn-outline" href="{% url 'export_csv' 'facilities' %}">⬇ Export Facilities</a>
+      <a class="btn btn-outline" href="{% url 'export_csv' 'institutions' %}">⬇ Export Institutions</a>
+      <button class="btn btn-outline" type="button" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ---- SUMMARY STAT CARDS ---- -->
+    <div class="grid-3" style="margin-bottom:18px;">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Population</div>
+        <div class="stat-number" style="color:#1a6278;">{{ stats.total_population|default:"0" }}</div>
+        <div class="stat-sub">{{ stats.total_pwds|default:"0" }} with disabilities</div>
+        <div class="stat-number color-teal">{{ stats.total_population }}</div>
+        <div class="stat-sub">{{ stats.total_with_dis }} with disabilities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-label">Total Households</div>
+        <div class="stat-number" style="color:#1a6278;">{{ stats.total_households|default:"0" }}</div>
+        <div class="stat-sub">Avg. {{ stats.avg_household_members|default:"0" }} members per household</div>
+        <div class="stat-number color-teal">{{ stats.total_households }}</div>
+        <div class="stat-sub">Avg. {{ stats.avg_hh_members }} members per household</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏗</div>
+        <div class="stat-label">Infrastructure</div>
+        <div class="stat-number color-teal">{{ stats.infrastructure }}</div>
+        <div class="stat-sub">Buildings and facilities</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Population by Age Group</div>
+        <div class="card-subtitle">Distribution of residents across age ranges</div>
+        {% if stats.total_population %}
+          <canvas id="chartAge" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area" id="chartAgePlaceholder">
+            <span class="chart-icon">📊</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+        <div class="table-wrap" style="margin-top:12px;">
+          <table class="data-table">
+            <thead>
+              <tr><th>Age Group</th><th class="text-right">Count</th></tr>
+            </thead>
+            <tbody>
+              {% for row in age_rows %}
+              <tr>
+                <td>{{ row.label }}</td>
+                <td class="text-right">{{ row.count }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gender Distribution</div>
+        <div class="card-subtitle">Population breakdown by gender</div>
+        {% if stats.total_population %}
+          <canvas id="chartGender" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area" id="chartGenderPlaceholder">
+            <span class="chart-icon">⭕</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ---- ROW 2: Livelihood + House Ownership ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Livelihood Distribution</div>
+        <div class="card-subtitle">Top occupations in the barangay</div>
+        {% if stats.total_population %}
+          <canvas id="chartLivelihood" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">💼</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+      <div class="card">
+        <div class="card-title">House Ownership</div>
+        <div class="card-subtitle">Breakdown by ownership type</div>
+        {% if stats.total_households %}
+          <canvas id="chartOwnership" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">🏠</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ---- ROW 3: House Materials + Detailed Age Group ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">House Materials</div>
+        <div class="card-subtitle">Construction materials used</div>
+        {% if stats.total_households %}
+          <canvas id="chartMaterials" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">🧱</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+      <div class="card">
+        <div class="card-title">Detailed Age Group Distribution</div>
+        <div class="card-subtitle">Population breakdown by specific age ranges</div>
+        {% if stats.total_population %}
+          <canvas id="chartAgeDetailed" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">📊</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ---- ROW 4: Disability by Gender ---- -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Disability by Gender</div>
+        <div class="card-subtitle">Breakdown by gender and disability status</div>
+        {% if stats.total_population %}
+          <canvas id="chartDisabilityGender" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">⭕</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+        <div class="table-wrap" style="margin-top:12px;">
+          <table class="data-table">
+            <tbody>
+              <tr><td>Male</td><td class="text-right color-teal fw-700">{{ gender_data.male }}</td></tr>
+              <tr><td>Female</td><td class="text-right color-teal fw-700">{{ gender_data.female }}</td></tr>
+              <tr><td>Male with Disability</td><td class="text-right">{{ dis_male }}</td></tr>
+              <tr><td>Female with Disability</td><td class="text-right">{{ dis_female }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Age Group Disability Analysis</div>
+        <div class="card-subtitle">Disability status breakdown for each age group</div>
+        {% if stats.total_population %}
+          <canvas id="chartAgeDisability" height="180" style="margin-top:10px;"></canvas>
+        {% else %}
+          <div class="chart-area">
+            <span class="chart-icon">📊</span>
+            Chart appears once residents are added
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ---- Disaster Preparedness ---- -->
+    </div>
+
+    <div class="card">
+      <div class="card-title">Disaster Preparedness Report</div>
+      <div class="card-subtitle">Evacuation centers and vulnerable population</div>
+      <div class="two-col" style="margin-bottom:0;">
+
+        <div>
+          <p class="settings-label" style="margin-bottom:10px;">Evacuation Centers</p>
+          {% if evacuation_centers %}
+            <table class="data-table">
+              <thead>
+                <tr><th>Name</th><th class="text-right">Capacity</th></tr>
+              </thead>
+              <tbody>
+                {% for center in evacuation_centers %}
+                  <tr>
+                    <td>{{ center.name }}</td>
+                    <td class="text-right">{{ center.capacity }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div class="empty-state" style="padding:20px 10px;">
+              <div class="empty-icon" style="font-size:24px;">🏕️</div>
+              <div class="empty-sub">No evacuation centers added yet.</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div>
+          <p class="settings-label" style="margin-bottom:10px;">Vulnerable Population</p>
+          <table class="data-table">
+            <tbody>
+              <tr>
+                <td>Persons with Disability</td>
+                <td class="text-right color-teal fw-700">{{ stats.total_pwds|default:"0" }}</td>
+              </tr>
+              <tr>
+                <td>Children (0 – 14 yrs)</td>
+                <td class="text-right color-teal fw-700">{{ stats.total_children|default:"0" }}</td>
+              </tr>
+              <tr>
+                <td>Senior Citizens (60+)</td>
+                <td class="text-right color-teal fw-700">{{ stats.total_senior_citizens|default:"0" }}</td>
+              </tr>
+              <tr style="border-top:2px solid #eaf2f6;">
+                <td class="fw-700" style="padding-top:12px;">Total Vulnerable</td>
+                <td class="text-right fw-700 color-teal" style="padding-top:12px; font-size:16px;">{{ stats.total_vulnerable|default:"0" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      <div class="card-subtitle">Vulnerable population summary</div>
+      <div class="table-wrap" style="margin-top:12px;">
+        <table class="data-table">
+          <tbody>
+            <tr><td>Persons with Disability</td><td class="text-right color-teal fw-700">{{ vulnerable.pwds }}</td></tr>
+            <tr><td>Children (0-12 yrs)</td><td class="text-right color-teal fw-700">{{ vulnerable.children }}</td></tr>
+            <tr><td>Senior Citizens (60+)</td><td class="text-right color-teal fw-700">{{ vulnerable.seniors }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sector Summary</div>
+      <div class="card-subtitle">Complete breakdown of population by sector</div>
+      <div class="table-wrap">
+      <div class="table-wrap" style="margin-top:12px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Sector</th>
+              <th class="text-right">Count</th>
+              <th class="text-right">% of Population</th>
+            </tr>
+            <tr><th>Sector</th><th class="text-right">Count</th></tr>
+          </thead>
+          <tbody>
+            {% for sector in sector_data %}
+              <tr>
+                <td>{{ sector.label }}</td>
+                <td class="text-right">{{ sector.count }}</td>
+                <td class="text-right">{{ sector.percentage }}%</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3">Labor Force</td>                            <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Unemployed</td>                             <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Out of School Children (OSC) 6–14 yrs</td><td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Out of School Youth (OSY) 15–24 yrs</td>  <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Persons with Disabilities (PWDs)</td>      <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Overseas Filipino Workers (OFWs)</td>      <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Solo Parents</td>                           <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">Indigenous Peoples (IPs)</td>              <td class="text-right">0</td><td class="text-right">0%</td></tr>
+              <tr><td colspan="3">LGBTQ+ Members</td>                        <td class="text-right">0</td><td class="text-right">0%</td></tr>
+            {% endfor %}
+            {% for sector, count in sectors.items %}
+            <tr>
+              <td>{{ sector }}</td>
+              <td class="text-right">{{ count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2" class="text-center">No sector data yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- end page-content -->
+
+  <script src="{% static 'css/app.js' %}"></script>
+
+  <!-- Chart data from Django context (JSON) -->
+  {{ age_data|json_script:"age-data" }}
+  {{ gender_data|json_script:"gender-data" }}
+  {{ livelihood_data|json_script:"livelihood-data" }}
+  {{ ownership_data|json_script:"ownership-data" }}
+  {{ materials_data|json_script:"materials-data" }}
+  {{ age_detailed_data|json_script:"age-detailed-data" }}
+  {{ disability_gender_data|json_script:"disability-gender-data" }}
+  {{ age_disability_data|json_script:"age-disability-data" }}
+
+  <script>
+    function exportPDF() {
+      showToast('Generating PDF report…', 'info');
+      window.location.href = '/reports/export/pdf/';
+    }
+    function exportExcel() {
+      showToast('Generating Excel report…', 'info');
+      window.location.href = '/reports/export/excel/';
+    }
+  </script>
+
+  <script src="{% static 'css/app.js' %}"></script>
+</body>
+</html>
+</html>

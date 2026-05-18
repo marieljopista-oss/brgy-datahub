@@ -9,7 +9,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key-change-t
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'brgy-datahub.onrender.com', 'localhost').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
