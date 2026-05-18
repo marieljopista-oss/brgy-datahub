@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Profile</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/profile.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back" title="Back to Home">←</a>
+      <span class="topbar-badge">PROFILE</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar" title="My Profile">👤</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="toast toast-{{ message.tags }} show" style="margin:12px 24px;">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="profile-wrap">
+    <div class="profile-card">
+
+      <!-- Banner + Avatar -->
+      <div class="profile-banner">
+        <div class="profile-avatar" id="avatarWrapper">
+          {% if user_profile.photo %}
+            <img id="profileImg" src="{{ user_profile.photo.url }}"
+                 alt="Profile photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
+            <span id="avatarEmoji" style="display:none;">👤</span>
+          {% else %}
+            <img id="profileImg" src="" alt=""
+                 style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
+            <span id="avatarEmoji">👤</span>
+          {% endif %}
+          <!-- Camera button — visible only in edit mode -->
+          <div class="avatar-edit-btn" id="cameraBtn"
+               onclick="document.getElementById('photoUpload').click()"
+               title="Change photo" style="display:none;">
+            📷
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-body">
+
+        <!-- Display name & role -->
+        <div class="profile-name">
+          {{ request.user.get_full_name|default:request.user.username }}
+        </div>
+        <div class="profile-role-tag">
+          {{ user_profile.role|default:"Barangay Official" }}
+        </div>
+
+        <!-- ---- ACCOUNT INFORMATION ---- -->
+        <div class="profile-section">Account Information</div>
+
+        <form method="POST" action="{% url 'profile_save' %}" enctype="multipart/form-data" id="profileForm">
+          {% csrf_token %}
+
+          <!-- Hidden file input for photo upload -->
+          <input type="file" id="photoUpload" name="photo" accept="image/*"
+                 style="display:none;" onchange="previewPhoto(event)"/>
+
+          <div class="profile-field">
+            <label for="pRole">Barangay Official Role</label>
+            <select id="pRole" name="role" disabled>
+              <option value="">Select role...</option>
+              <option value="Captain"       {% if user_profile.role == "Captain"       %}selected{% endif %}>Captain</option>
+              <option value="Secretary"     {% if user_profile.role == "Secretary"     %}selected{% endif %}>Secretary</option>
+              <option value="Health Worker" {% if user_profile.role == "Health Worker" %}selected{% endif %}>Health Worker</option>
+              <option value="Treasurer"     {% if user_profile.role == "Treasurer"     %}selected{% endif %}>Treasurer</option>
+              <option value="Councilor"     {% if user_profile.role == "Councilor"     %}selected{% endif %}>Councilor</option>
+            </select>
+          </div>
+
+          <div class="profile-field">
+            <label for="pName">Full Name</label>
+            <input type="text" id="pName" name="full_name"
+                   placeholder="Enter your full name"
+                   value="{{ request.user.get_full_name }}" disabled/>
+          </div>
+
+          <div class="profile-field">
+            <label for="pEmail">Email Address</label>
+            <input type="email" id="pEmail" name="email"
+                   placeholder="Enter email address"
+                   value="{{ request.user.email }}" disabled/>
+          </div>
+
+          <div class="profile-field">
+            <label for="pContact">Contact Number</label>
+            <input type="tel" id="pContact" name="contact"
+                   placeholder="+63 9XX XXX XXXX"
+                   value="{{ user_profile.contact|default:'' }}" disabled/>
+          </div>
+
+          <!-- Change Password section (hidden until edit mode) -->
+          <div id="passwordSection" style="display:none;">
+            <div class="profile-section">Change Password</div>
+
+            <div class="profile-field">
+              <label for="pCurrPw">Current Password</label>
+              <input type="password" id="pCurrPw" name="current_password"
+                     placeholder="Enter current password" disabled/>
+            </div>
+
+            <div class="profile-field">
+              <label for="pNewPw">New Password</label>
+              <input type="password" id="pNewPw" name="new_password"
+                     placeholder="Enter new password" disabled/>
+            </div>
+
+            <div class="profile-field">
+              <label for="pConfirmPw">Confirm New Password</label>
+              <input type="password" id="pConfirmPw" name="confirm_password"
+                     placeholder="Re-enter new password" disabled/>
+            </div>
+          </div>
+
+          <!-- Edit button -->
+          <button type="button" id="editBtn" class="btn btn-primary btn-full mt-12"
+                  onclick="enableEdit()"
+                  style="padding:13px; font-size:14px; letter-spacing:0.5px; border-radius:12px;">
+            ✏️ Edit Profile
+          </button>
+
+          <!-- Save + Cancel (hidden until edit mode) -->
+          <button type="submit" id="saveBtn" class="btn btn-primary btn-full mt-12"
+                  style="display:none; padding:13px; font-size:14px; letter-spacing:0.5px; border-radius:12px;">
+            💾 Save Changes
+          </button>
+          <button type="button" id="cancelBtn" class="btn btn-outline btn-full"
+                  onclick="cancelEdit()"
+                  style="display:none; padding:13px; font-size:14px; border-radius:12px; margin-top:10px;">
+            ✕ Cancel
+          </button>
+
+        </form>
+
+        <div class="divider"></div>
+
+        <!-- Logout -->
+        <form method="POST" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-logout"
+                  onclick="return confirm('Are you sure you want to logout?')">
+            🚪 LOGOUT
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+
+    const profileFields = ['pName', 'pEmail', 'pContact', 'pRole',
+                           'pCurrPw', 'pNewPw', 'pConfirmPw'];
+
+    function lockFields() {
+      profileFields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.disabled = true;
+      });
+      document.getElementById('editBtn').style.display        = 'block';
+      document.getElementById('saveBtn').style.display        = 'none';
+      document.getElementById('cancelBtn').style.display      = 'none';
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('cameraBtn').style.display      = 'none';
+    }
+
+    function enableEdit() {
+      profileFields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.disabled = false;
+      });
+      document.getElementById('editBtn').style.display        = 'none';
+      document.getElementById('saveBtn').style.display        = 'block';
+      document.getElementById('cancelBtn').style.display      = 'block';
+      document.getElementById('passwordSection').style.display = 'block';
+      document.getElementById('cameraBtn').style.display      = 'flex';
+    }
+
+    function cancelEdit() {
+      window.location.reload();
+    }
+
+    function previewPhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('profileImg').src = e.target.result;
+        document.getElementById('profileImg').style.display = 'block';
+        document.getElementById('avatarEmoji').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      const newPw     = document.getElementById('pNewPw').value;
+      const confirmPw = document.getElementById('pConfirmPw').value;
+      if (newPw && newPw !== confirmPw) {
+        e.preventDefault();
+        alert('New passwords do not match.');
+        return;
+      }
+      if (newPw && newPw.length < 6) {
+        e.preventDefault();
+        alert('Password must be at least 6 characters.');
+      }
+    });
+
+    /* Start in locked (view) mode */
+    lockFields();
+
+  </script>
+
+</body>
+</html>

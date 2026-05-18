@@ -1,0 +1,387 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Login</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}"/>
+</head>
+<body>
+
+  <div class="auth-page">
+    <div class="auth-card">
+
+      <!-- Tab switcher: LOGIN | SIGN UP -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="showPanel('login')">
+          Login
+        </button>
+        <button class="auth-tab" id="tab-signup" onclick="showPanel('signup')">
+          Sign Up
+        </button>
+      </div>
+
+      <div class="auth-body">
+
+        <!-- ==========================================
+             LOGIN PANEL
+             ========================================== -->
+        <div class="auth-panel active" id="panel-login">
+
+          <div class="auth-avatar">
+            <img src="{% static 'css/barangay_logo.png' %}"
+                 style="width:100%; height:100%; object-fit:cover; border-radius:50%;"/>
+          </div>
+
+          <h2>Barangay DataHub</h2>
+          <p>Sign in to access your barangay system.</p>
+
+          <!-- Django error message -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="auth-alert auth-alert-error show">
+                <span>⚠️</span>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="auth-field">
+              <label for="loginUsername">Username</label>
+              <input type="text" id="loginUsername" name="username"
+                     placeholder="Enter your username"
+                     autocomplete="username" required/>
+            </div>
+
+            <div class="auth-field">
+              <label for="loginPassword">Password</label>
+              <div class="pw-wrap">
+                <input type="password" id="loginPassword" name="password"
+                       placeholder="Enter your password"
+                       autocomplete="current-password" required/>
+                <button type="button" class="pw-toggle"
+                        onclick="togglePw('loginPassword', this)"
+                        title="Show / hide password">👁️</button>
+              </div>
+            </div>
+
+            <div style="text-align:right; margin-top:-8px; margin-bottom:20px;">
+              <a href="#"
+                 style="font-size:12px; color:#1a6278; text-decoration:none; font-weight:600;"
+                 onclick="showForgot(); return false;">
+                Forgot Password?
+              </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-btn">
+              LOGIN
+            </button>
+          </form>
+
+          <div class="auth-switch">
+            Don't have an account?
+            <a href="#" onclick="showPanel('signup'); return false;">Sign up here</a>
+          </div>
+
+        </div><!-- end login panel -->
+
+
+        <!-- ==========================================
+             SIGN UP PANEL
+             ========================================== -->
+        <div class="auth-panel" id="panel-signup">
+
+          <h2>Create Account</h2>
+          <p>Register a new barangay official account.</p>
+
+          <!-- Django signup error/success messages -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="auth-alert auth-alert-{{ message.tags }} show">
+                <span>{% if message.tags == 'error' %}⚠️{% else %}✅{% endif %}</span>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+
+            <div class="auth-field-row">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label for="signupFirst">First Name</label>
+                <input type="text" id="signupFirst" name="first_name"
+                       placeholder="First name" required/>
+              </div>
+              <div class="auth-field" style="margin-bottom:0;">
+                <label for="signupLast">Last Name</label>
+                <input type="text" id="signupLast" name="last_name"
+                       placeholder="Last name" required/>
+              </div>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupRole">Barangay Official Role</label>
+              <select id="signupRole" name="role" required>
+                <option value="">Select your role…</option>
+                <option value="Captain">Barangay Captain</option>
+                <option value="Secretary">Barangay Secretary</option>
+                <option value="Health Worker">Health Worker</option>
+                <option value="Treasurer">Barangay Treasurer</option>
+                <option value="Councilor">Barangay Councilor</option>
+              </select>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupUsername">Username</label>
+              <input type="text" id="signupUsername" name="username"
+                     placeholder="Choose a username"
+                     autocomplete="username" required/>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupEmail">Email Address</label>
+              <input type="email" id="signupEmail" name="email"
+                     placeholder="e.g., admin@barangay.gov.ph" required/>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupContact">Contact Number</label>
+              <input type="tel" id="signupContact" name="contact"
+                     placeholder="+63 9XX XXX XXXX"/>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupPassword">Password</label>
+              <div class="pw-wrap">
+                <input type="password" id="signupPassword" name="password"
+                       placeholder="At least 8 characters"
+                       autocomplete="new-password"
+                       oninput="checkStrength(this.value)" required/>
+                <button type="button" class="pw-toggle"
+                        onclick="togglePw('signupPassword', this)"
+                        title="Show / hide password">👁️</button>
+              </div>
+              <div class="pw-strength">
+                <div class="pw-strength-bar" id="strengthBar"></div>
+              </div>
+              <div class="pw-strength-label" id="strengthLabel"></div>
+            </div>
+
+            <div class="auth-field">
+              <label for="signupConfirm">Confirm Password</label>
+              <div class="pw-wrap">
+                <input type="password" id="signupConfirm" name="confirm_password"
+                       placeholder="Re-enter your password"
+                       autocomplete="new-password" required/>
+                <button type="button" class="pw-toggle"
+                        onclick="togglePw('signupConfirm', this)"
+                        title="Show / hide password">👁️</button>
+              </div>
+            </div>
+
+            <div class="terms-row">
+              <input type="checkbox" id="signupTerms" name="terms" required/>
+              <label for="signupTerms" style="font-size:12.5px; color:#4a6a7a; font-weight:400;
+                     text-transform:none; letter-spacing:0; margin-bottom:0; cursor:pointer;">
+                I agree to the
+                <a href="#" onclick="showTerms(); return false;">Terms &amp; Conditions</a>
+                and
+                <a href="#" onclick="showTerms(); return false;">Privacy Policy</a>
+                of the Barangay DataHub System.
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-btn">
+              CREATE ACCOUNT
+            </button>
+          </form>
+
+          <div class="auth-switch">
+            Already have an account?
+            <a href="#" onclick="showPanel('login'); return false;">Log in here</a>
+          </div>
+
+        </div><!-- end signup panel -->
+
+
+        <!-- ==========================================
+             FORGOT PASSWORD PANEL
+             ========================================== -->
+        <div class="auth-panel" id="panel-forgot">
+
+          <button class="forgot-back" onclick="showPanel('login')">
+            ← Back to Login
+          </button>
+
+          <h2>Reset Password</h2>
+          <p style="font-size:13px; color:#7a9aaa; margin-bottom:24px;">
+            Please contact your Barangay Administrator to reset your password.
+          </p>
+
+          <div class="auth-field">
+            <label>Registered Email</label>
+            <input type="email" placeholder="Enter your email" disabled/>
+          </div>
+
+          <button type="button" class="btn btn-primary auth-btn"
+                  onclick="showPanel('login')">
+            BACK TO LOGIN
+          </button>
+
+        </div><!-- end forgot panel -->
+
+      </div><!-- end auth-body -->
+    </div><!-- end auth-card -->
+  </div><!-- end auth-page -->
+
+
+  <!-- ============================================
+       TERMS & CONDITIONS MODAL
+       ============================================ -->
+  <div class="modal-overlay" id="termsModal">
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-header">
+        <div>
+          <h2>Terms &amp; Conditions</h2>
+          <p>Barangay DataHub System — Privacy &amp; Data Policy</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('termsModal')">✕</button>
+      </div>
+
+      <div style="font-size:13px; color:#4a6a7a; line-height:1.8;">
+        <p style="margin-bottom:14px;">
+          By creating an account in the Barangay DataHub System, you agree to the following terms:
+        </p>
+        <p style="font-weight:700; color:#1a3a4a; margin-bottom:6px;">1. Data Confidentiality</p>
+        <p style="margin-bottom:14px;">
+          All resident and household data is strictly confidential and must not be shared outside
+          of official barangay functions.
+        </p>
+        <p style="font-weight:700; color:#1a3a4a; margin-bottom:6px;">2. Authorized Use</p>
+        <p style="margin-bottom:14px;">
+          This system is for authorized barangay officials only. Unauthorized access is prohibited.
+        </p>
+        <p style="font-weight:700; color:#1a3a4a; margin-bottom:6px;">3. Data Accuracy</p>
+        <p style="margin-bottom:14px;">
+          Users are responsible for the accuracy of all data entered into the system.
+        </p>
+        <p style="font-weight:700; color:#1a3a4a; margin-bottom:6px;">4. Privacy</p>
+        <p style="margin-bottom:14px;">
+          Personal data is protected under the Data Privacy Act of 2012 (Republic Act 10173).
+        </p>
+        <p style="font-weight:700; color:#1a3a4a; margin-bottom:6px;">5. Account Responsibility</p>
+        <p>
+          You are responsible for maintaining the confidentiality of your account credentials.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('termsModal')">Close</button>
+        <button class="btn btn-primary" onclick="acceptTerms()">I Agree</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+
+    /* ── Panel switching ── */
+    function showPanel(panel) {
+      ['panel-login', 'panel-signup', 'panel-forgot'].forEach(function(id) {
+        document.getElementById(id).classList.remove('active');
+      });
+      ['tab-login', 'tab-signup'].forEach(function(id) {
+        document.getElementById(id).classList.remove('active');
+      });
+      hideAllAlerts();
+
+      if (panel === 'login') {
+        document.getElementById('panel-login').classList.add('active');
+        document.getElementById('tab-login').classList.add('active');
+      } else if (panel === 'signup') {
+        document.getElementById('panel-signup').classList.add('active');
+        document.getElementById('tab-signup').classList.add('active');
+      } else if (panel === 'forgot') {
+        showForgot();
+      }
+    }
+
+    function showForgot() {
+      ['panel-login', 'panel-signup'].forEach(function(id) {
+        document.getElementById(id).classList.remove('active');
+      });
+      ['tab-login', 'tab-signup'].forEach(function(id) {
+        document.getElementById(id).classList.remove('active');
+      });
+      document.getElementById('panel-forgot').classList.add('active');
+      hideAllAlerts();
+    }
+
+    function hideAllAlerts() {
+      document.querySelectorAll('.auth-alert').forEach(function(el) {
+        el.classList.remove('show');
+      });
+    }
+
+    /* ── Show/hide password ── */
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    /* ── Password strength ── */
+    function checkStrength(password) {
+      const bar   = document.getElementById('strengthBar');
+      const label = document.getElementById('strengthLabel');
+      if (!password) { bar.style.width = '0%'; label.textContent = ''; return; }
+
+      let score = 0;
+      if (password.length >= 8)           score++;
+      if (password.length >= 12)          score++;
+      if (/[A-Z]/.test(password))         score++;
+      if (/[0-9]/.test(password))         score++;
+      if (/[^A-Za-z0-9]/.test(password))  score++;
+
+      const levels = [
+        { pct:'20%', color:'#e05252', text:'Very Weak'  },
+        { pct:'40%', color:'#e07020', text:'Weak'       },
+        { pct:'60%', color:'#e0a020', text:'Fair'       },
+        { pct:'80%', color:'#5ab05a', text:'Strong'     },
+        { pct:'100%',color:'#1a7a35', text:'Very Strong'},
+      ];
+      const level = levels[Math.min(score - 1, 4)] || levels[0];
+      bar.style.width      = level.pct;
+      bar.style.background = level.color;
+      label.textContent    = level.text;
+      label.style.color    = level.color;
+    }
+
+    /* ── Terms modal ── */
+    function showTerms() { openModal('termsModal'); }
+    function acceptTerms() {
+      document.getElementById('signupTerms').checked = true;
+      closeModal('termsModal');
+    }
+
+    /* ── Auto-show signup panel if redirected back after error ── */
+  {% if show_signup %} 
+      showPanel('signup');
+    {% endif %}
+
+  </script>
+
+</body>
+</html>

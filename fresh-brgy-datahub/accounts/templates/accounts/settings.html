@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Settings</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">&#8592;</a>
+      <span class="topbar-badge">SETTINGS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Settings</h1>
+      <p>Manage system settings and configuration</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('profile',this,'set')">Barangay Profile</button>
+      <button class="tab-btn"        onclick="switchTab('users',this,'set')">User Management</button>
+      <button class="tab-btn"        onclick="switchTab('backup',this,'set')">Backup &amp; Export</button>
+    </div>
+
+
+    <!-- ====== BARANGAY PROFILE ====== -->
+    <div id="tab-profile" class="tab-panel active" data-group="set">
+
+      <div class="card">
+        <div class="card-title">Barangay Profile Information</div>
+        <div class="card-subtitle">Edit the vision, mission, and goals of your barangay</div>
+        <form method="POST" action="{% url 'settings_save_profile' %}">
+          {% csrf_token %}
+          <div style="margin-bottom:16px;">
+            <label>Vision</label>
+            <textarea name="vision" placeholder="Enter barangay vision statement…" rows="3">{% if barangay %}{{ barangay.vision }}{% endif %}</textarea>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label>Mission</label>
+            <textarea name="mission" placeholder="Enter barangay mission statement…" rows="3">{% if barangay %}{{ barangay.mission }}{% endif %}</textarea>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label>Goals</label>
+            <textarea name="goals" placeholder="Enter barangay goals…" rows="3">{% if barangay %}{{ barangay.goals }}{% endif %}</textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">&#128190; Save Changes</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Barangay Information</div>
+        <div class="card-subtitle">Basic information about your barangay</div>
+        <form method="POST" action="{% url 'settings_save_barangay' %}">
+          {% csrf_token %}
+          <div class="settings-grid" style="margin-bottom:16px;">
+            <div>
+              <label>Barangay Name</label>
+              <input type="text" name="name" placeholder="e.g., Barangay Cogon" value="{% if barangay %}{{ barangay.name }}{% endif %}"/>
+            </div>
+            <div>
+              <label>Municipality / City</label>
+              <input type="text" name="municipality" placeholder="e.g., Cagayan de Oro" value="{% if barangay %}{{ barangay.municipality }}{% endif %}"/>
+            </div>
+            <div>
+              <label>Province</label>
+              <input type="text" name="province" placeholder="e.g., Misamis Oriental" value="{% if barangay %}{{ barangay.province }}{% endif %}"/>
+            </div>
+            <div>
+              <label>Region</label>
+              <input type="text" name="region" placeholder="e.g., Region X" value="{% if barangay %}{{ barangay.region }}{% endif %}"/>
+            </div>
+            <div>
+              <label>Barangay Captain</label>
+              <input type="text" name="captain" placeholder="Full name of the Barangay Captain" value="{% if barangay %}{{ barangay.captain }}{% endif %}"/>
+            </div>
+            <div>
+              <label>Contact Number</label>
+              <input type="tel" name="contact" placeholder="+63 9XX XXX XXXX" value="{% if barangay %}{{ barangay.contact }}{% endif %}"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">&#128190; Save Changes</button>
+        </form>
+      </div>
+
+    </div>
+
+
+    <!-- ====== USER MANAGEMENT ====== -->
+    <div id="tab-users" class="tab-panel" data-group="set">
+
+      <div class="card">
+        <div class="card-title">User Management</div>
+        <div class="card-subtitle">Create and manage system users and their roles</div>
+
+        <form method="POST" action="{% url 'settings_add_user' %}" class="inline-form" style="margin-bottom:20px;">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="e.g., captain_admin" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="At least 8 characters" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Role</label>
+            <select name="role">
+              <option value="Captain">Captain</option>
+              <option value="Secretary">Secretary</option>
+              <option value="Health Worker">Health Worker</option>
+              <option value="Treasurer">Treasurer</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">&#10133; Add User</button>
+        </form>
+
+        {% if users %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Username</th><th>Role</th><th>Status</th><th class="text-right">Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for u in users %}
+                  <tr>
+                    <td class="fw-700">{{ u.username }}</td>
+                    <td>{{ u.role }}</td>
+                    <td><span class="badge badge-green">Active</span></td>
+                    <td class="text-right">
+                      {% if u != request.user %}
+                        <form method="POST" action="{% url 'settings_delete_user' u.pk %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="icon-btn icon-delete">Delete</button>
+                        </form>
+                      {% else %}
+                        <span class="na">You</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">&#128100;</div>
+            <div class="empty-title">No users added yet</div>
+            <div class="empty-sub">Use the form above to create the first account.</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Role Permissions</div>
+        <div class="card-subtitle">Overview of what each role can access</div>
+        <div class="role-box">
+          <div class="role-name">&#128081; Captain</div>
+          <p>Full system access — user management, all modules, system settings, backup &amp; export, and reports.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">&#128203; Secretary</div>
+          <p>Access to residents, facilities, institutions, and reports. Can add, edit, and delete records. Cannot manage users or backup.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">&#129658; Health Worker</div>
+          <p>Access to residents module and health-related reports only. Can view and update health and disability information.</p>
+        </div>
+        <div class="role-box">
+          <div class="role-name">&#128176; Treasurer</div>
+          <p>Access to reports and socio-economic data. Read-only access to resident records.</p>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ====== BACKUP & EXPORT ====== -->
+    <div id="tab-backup" class="tab-panel" data-group="set">
+
+      <div class="card">
+        <div class="card-title">Backup &amp; Data Export</div>
+        <div class="card-subtitle">Create backups and export system data</div>
+
+        <div class="two-col">
+          <div class="card" style="border:1.5px solid #eaf2f6; text-align:center;">
+            <div style="font-size:32px; margin-bottom:12px;">&#128190;</div>
+            <div class="card-title" style="margin-bottom:6px;">Create Backup</div>
+            <div class="card-subtitle">Export all system data to a backup file</div>
+            <a href="{% url 'settings_backup' %}" class="btn btn-primary btn-full">
+               &#11015;&#65039; Create Backup
+            </a>
+          </div>
+          <div class="card" style="border:1.5px solid #eaf2f6; text-align:center;">
+            <div style="font-size:32px; margin-bottom:12px;">&#128230;</div>
+            <div class="card-title" style="margin-bottom:6px;">Restore Backup</div>
+            <div class="card-subtitle">Import data from a previously saved backup file</div>
+            <form method="POST" action="{% url 'settings_restore' %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <label for="restoreFile" class="btn btn-outline btn-full" style="cursor:pointer; display:flex; justify-content:center;">
+                &#11014;&#65039; Import Backup
+              </label>
+              <input type="file" id="restoreFile" name="backup_file" accept=".zip"
+                    style="display:none;" onchange="this.form.submit()"/>
+            </form>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="card-title" style="margin-bottom:14px;">Export Individual Datasets</p>
+        <div class="grid-3">
+          <a href="{% url 'export_csv' 'residents' %}" class="btn btn-outline">
+            &#11015; Export Residents
+          </a>
+          <a href="{% url 'export_csv' 'facilities' %}" class="btn btn-outline">
+            &#11015; Export Facilities
+          </a>
+          <a href="{% url 'export_csv' 'institutions' %}" class="btn btn-outline">
+            &#11015; Export Institutions
+          </a>
+        </div>
+
+        <div class="notes-box" style="margin-top:20px;">
+          <div class="notes-title">&#9888;&#65039; Important Notes</div>
+          <ul>
+            <li>Exports are in CSV format compatible with Excel and Google Sheets.</li>
+            <li>Store backup files in a secure location and back up regularly.</li>
+            <li>Restoring a backup will permanently overwrite current data.</li>
+            <li>Only the <strong>Captain</strong> role can create and restore backups.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const activeTab = params.get('tab');
+    if (activeTab) {
+      const tabButton = Array.from(document.querySelectorAll('.tab-btn')).find(
+        btn => btn.getAttribute('onclick').includes("'" + activeTab + "'")
+      );
+      if (tabButton) switchTab(activeTab, tabButton, 'set');
+    }
+  </script>
+
+</body>
+</html>

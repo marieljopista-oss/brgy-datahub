@@ -1,0 +1,13 @@
+[33m2bff1e4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD~
+[33m9cbc986[m HEAD@{1}: reset: moving to HEAD~
+[33m33be574[m HEAD@{2}: reset: moving to HEAD~
+[33meb9790a[m HEAD@{3}: reset: moving to HEAD~1
+[33mf129608[m HEAD@{4}: reset: moving to HEAD~1
+[33m806c72c[m HEAD@{5}: reset: moving to HEAD~1
+[33m4bbe32e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{6}: commit: Add barangay logo
+[33m806c72c[m HEAD@{7}: commit: Cleaned up project structure and moved files to root
+[33mf129608[m HEAD@{8}: commit: commit update htmls and css and js files
+[33meb9790a[m HEAD@{9}: commit: Update dashboard.html and facilities.html for static file handling and URL routing
+[33m33be574[m HEAD@{10}: commit: commit 9f8e7d6c3b2a1e4f5g6h7i8j9k0l1m2n3o4p5q6
+[33m9cbc986[m HEAD@{11}: pull --tags origin main: Fast-forward
+[33m83a4129[m HEAD@{12}: clone: from https://github.com/marieljopista-oss/brgy-datahub

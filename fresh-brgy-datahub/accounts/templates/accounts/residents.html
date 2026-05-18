@@ -1,0 +1,901 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub — Residents</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'home' %}" class="btn-back">←</a>
+      <span class="topbar-badge">RESIDENTS</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">👤</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Residents</h1>
+      <p>Manage resident information and records</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('residents-list',this,'main')">👥 Residents</button>
+      <button class="tab-btn"        onclick="switchTab('households-list',this,'main')">🏠 Households</button>
+    </div>
+
+
+    <!-- ====== RESIDENTS TAB ====== -->
+    <div id="tab-residents-list" class="tab-panel active" data-group="main">
+    <div class="card">
+
+      <!-- Card header: count + search + add button -->
+      <div class="card-header">
+        <div>
+          <div class="card-title">Resident List</div>
+          <div style="font-size:12px; color:#7a9aaa; margin-top:3px;">
+            Total residents: <strong>{{ residents.count|default:0 }}</strong>
+          </div>
+        </div>
+        <div class="flex gap-8 flex-wrap items-center">
+          <form method="GET" action="{% url 'residents' %}" class="search-bar" style="display:flex;">
+            <span class="search-icon">🔍</span>
+            <input type="text" name="q" placeholder="Search residents..."
+                   value="{{ request.GET.q|default:'' }}"/>
+          </form>
+          <button class="btn btn-outline" onclick="openModal('importModal')">
+            📥 Import Excel
+          </button>
+          <button class="btn btn-primary" onclick="openModal('addModal')">
+            ➕ Add Resident
+          </button>
+        </div>
+      </div>
+
+      <!-- Django messages (success / error toasts) -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Empty state -->
+      {% if not residents %}
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">👥</div>
+          <div class="empty-title">No residents added yet</div>
+          <div class="empty-sub">Click <strong>+ Add Resident</strong> to start building the list.</div>
+        </div>
+      {% else %}
+        <!-- Resident table -->
+        <div class="table-wrap" id="tableWrap">
+          <table class="data-table" id="residentTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Livelihood</th>
+                <th>Disability</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="residentBody">
+              {% for resident in residents %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-700">{{ resident.full_name }}</td>
+                <td>{{ resident.age }}</td>
+                <td>{{ resident.gender }}</td>
+                <td class="{% if not resident.livelihood %}na{% endif %}">
+                  {{ resident.livelihood|default:"—" }}
+                </td>
+                <td>
+                  {% if resident.has_disability %}
+                    <span class="badge badge-yellow">Yes</span>
+                  {% else %}
+                    No
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-icons">
+                    <button class="icon-btn icon-edit"
+                            onclick="openEdit(
+                              {{ resident.id }},
+                              '{{ resident.first_name|escapejs }}',
+                              '{{ resident.middle_name|default:"" |escapejs }}',
+                              '{{ resident.last_name|escapejs }}',
+                              '{{ resident.birth_date|escapejs }}',
+                              '{{ resident.gender|escapejs }}',
+                              '{{ resident.livelihood|default:"" |escapejs }}',
+                              {{ resident.has_disability|yesno:"true,false" }},
+                              '{{ resident.lgbtq_type|default:"" |escapejs }}',
+                              {{ resident.in_labor_force|yesno:"true,false" }},
+                              {{ resident.is_unemployed|yesno:"true,false" }},
+                              {{ resident.is_ofw|yesno:"true,false" }},
+                              {{ resident.is_solo_parent|yesno:"true,false" }},
+                              {{ resident.is_indigenous|yesno:"true,false" }},
+                              '{{ resident.civil_status|default:"" |escapejs }}',
+                              '{{ resident.citizenship|default:"Filipino" |escapejs }}',
+                              '{{ resident.household_id|default:"" |escapejs }}'
+                            )"
+                            title="Edit">✏️</button>
+                    <form method="POST" action="{% url 'resident_delete' resident.id %}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete {{ resident.full_name|escapejs }}? This cannot be undone.');">
+                      {% csrf_token %}
+                      <button type="submit" class="icon-btn icon-delete" title="Delete">🗑️</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if residents.has_other_pages %}
+        <div class="pagination" style="margin-top:16px; display:flex; gap:8px; justify-content:center;">
+          {% if residents.has_previous %}
+            <a href="?page={{ residents.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+               class="btn btn-outline btn-sm">← Prev</a>
+          {% endif %}
+          <span style="line-height:32px; font-size:13px; color:#4a6a7a;">
+            Page {{ residents.number }} of {{ residents.paginator.num_pages }}
+          </span>
+          {% if residents.has_next %}
+            <a href="?page={{ residents.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+               class="btn btn-outline btn-sm">Next →</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      {% endif %}
+
+    </div>
+    </div><!-- end residents tab -->
+
+
+    <!-- ====== HOUSEHOLDS TAB ====== -->
+    <div id="tab-households-list" class="tab-panel" data-group="main">
+
+      <!-- Header -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Household List</div>
+            <div style="font-size:12px; color:#7a9aaa; margin-top:3px;">
+              Total households: <strong>{{ households.count|default:0 }}</strong>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addHouseholdModal')">
+            ➕ Add Household
+          </button>
+        </div>
+
+        {% if not households %}
+          <div class="empty-state">
+            <div class="empty-icon">🏠</div>
+            <div class="empty-title">No households added yet</div>
+            <div class="empty-sub">Click <strong>+ Add Household</strong> to get started.</div>
+          </div>
+        {% else %}
+          <div class="table-wrap">
+            <table class="data-table" id="householdTable">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Household #</th>
+                  <th>Head</th>
+                  <th>Address</th>
+                  <th>Ownership</th>
+                  <th>Material</th>
+                  <th>Members</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for hh in households %}
+                <!-- Household row -->
+                <tr style="cursor:pointer;" onclick="toggleMembers('hh-{{ hh.id }}')">
+                  <td style="width:28px; color:#7a9aaa; font-size:12px;">
+                    <span id="hh-arrow-{{ hh.id }}">▶</span>
+                  </td>
+                  <td class="fw-700">{{ hh.household_id }}</td>
+                  <td>{{ hh.head|default:"—" }}</td>
+                  <td>{{ hh.address|default:"—" }}</td>
+                  <td>{{ hh.ownership|default:"—" }}</td>
+                  <td>{{ hh.house_material|default:"—" }}</td>
+                  <td>
+                    <span class="badge badge-green">{{ hh.member_count }}</span>
+                  </td>
+                  <td>
+                    <div class="action-icons" onclick="event.stopPropagation()">
+                      <button class="icon-btn icon-edit"
+                              onclick="openHouseholdEdit(
+                                {{ hh.id }},
+                                '{{ hh.household_id|escapejs }}',
+                                '{{ hh.head|default:"" | escapejs }}',
+                                '{{ hh.address|default:"" |escapejs }}',
+                                '{{ hh.ownership|default:"" |escapejs }}',
+                                '{{ hh.house_material|default:"" |escapejs }}'
+                              )" title="Edit">✏️</button>
+                      <form method="POST" action="{% url 'household_delete' hh.id %}"
+                            style="display:inline;"
+                            onsubmit="return confirm ('Delete Household {{ hh.household_id|escapejs }}? Members will be unlinked.');">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete" title="Delete">🗑️</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Expandable members row -->
+                <tr id="hh-{{ hh.id }}" style="display:none; background:#f7fbfd;">
+                  <td colspan="8" style="padding:0 12px 14px 44px;">
+                    {% if hh.residents.all %}
+                      <table class="data-table" style="margin-top:8px; font-size:12px;">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Livelihood</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for member in hh.residents.all %}
+                          <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-700">{{ member.full_name }}</td>
+                            <td>{{ member.age }}</td>
+                            <td>{{ member.gender }}</td>
+                            <td>{{ member.livelihood|default:"—" }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    {% else %}
+                      <p style="font-size:12px; color:#7a9aaa; margin-top:8px;">
+                        No members linked to this household yet.
+                        Assign residents to this household when adding or editing a resident.
+                      </p>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+
+    </div><!-- end households tab -->
+
+  </div><!-- end page-content -->
+
+
+  <!-- ================================================
+       IMPORT RESIDENTS MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Import Residents</h2>
+          <p>Upload an Excel file to bulk-add residents.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('importModal')">✕</button>
+      </div>
+
+      <form method="POST" action="{% url 'resident_import' %}" enctype="multipart/form-data" id="importForm">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <label for="excelFile">Excel File</label>
+          <div class="form-field">
+            <input type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" required/>
+          </div>
+        </div>
+
+        <div style="background:#f0f7fa; border-radius:10px; padding:14px; margin-top:10px; font-size:12px; color:#4a6a7a; line-height:1.7;">
+          <strong>Expected column order:</strong><br/>
+          First Name &nbsp;|&nbsp; Middle Name &nbsp;|&nbsp; Last Name &nbsp;|&nbsp; Birth Date <em>(YYYY-MM-DD)</em> &nbsp;|&nbsp;
+          Gender <em>(Male/Female)</em> &nbsp;|&nbsp; Livelihood &nbsp;|&nbsp;
+          Has Disability <em>(TRUE/FALSE)</em> &nbsp;|&nbsp; LGBTQ Type &nbsp;|&nbsp;
+          In Labor Force <em>(TRUE/FALSE)</em> &nbsp;|&nbsp; Is Unemployed <em>(TRUE/FALSE)</em> &nbsp;|&nbsp;
+          Is OFW <em>(TRUE/FALSE)</em> &nbsp;|&nbsp; Is Solo Parent <em>(TRUE/FALSE)</em> &nbsp;|&nbsp;
+          Is Indigenous <em>(TRUE/FALSE)</em> &nbsp;|&nbsp; Civil Status &nbsp;|&nbsp; Citizenship
+          <br/><br/>
+          <strong>Row 1 must be the header row.</strong> Data starts at row 2.
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('importModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="importBtn">⬆️ Upload &amp; Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       ADD RESIDENT MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Add New Resident</h2>
+          <p>Enter the resident's information below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+      </div>
+
+      <form method="POST" action="{% url 'resident_add' %}" id="addForm">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <label for="aFirstName">First Name</label>
+          <div class="form-field">
+            <input type="text" id="aFirstName" name="first_name" placeholder="First name" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aMiddleName">Middle Name <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="aMiddleName" name="middle_name" placeholder="Middle name"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aLastName">Last Name</label>
+          <div class="form-field">
+            <input type="text" id="aLastName" name="last_name" placeholder="Last name" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aBdate">Birth Date</label>
+          <div class="form-field">
+            <input type="date" id="aBdate" name="birth_date" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aGender">Gender</label>
+          <div class="form-field">
+            <select id="aGender" name="gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aHousehold">Household <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="aHousehold" name="household">
+              <option value="">— None —</option>
+              {% for hh in households %}
+                <option value="{{ hh.id }}">{{ hh.household_id }}{% if hh.head %} — {{ hh.head }}{% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aLivelihood">Livelihood <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="aLivelihood" name="livelihood">
+              <option value="">None</option>
+              <option>Farming</option>
+              <option>Teaching</option>
+              <option>Student</option>
+              <option>Construction</option>
+              <option>Small Business</option>
+              <option>Retail</option>
+              <option>Healthcare</option>
+              <option>Government</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Disability</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aDisability" name="has_disability" value="1"/> Has disability
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aLgbtq">LGBTQ Type <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="aLgbtq" name="lgbtq_type">
+              <option value="">None</option>
+              <option>Gay</option>
+              <option>Lesbian</option>
+              <option>Bisexual</option>
+              <option>Transgender</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Labor Force</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aLabor" name="in_labor_force" value="1"/> Is in labor force
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Unemployed</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aUnemployed" name="is_unemployed" value="1"/> Is unemployed
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>OFW</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aOfw" name="is_ofw" value="1"/> Is OFW
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Solo Parent</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aSolo" name="is_solo_parent" value="1"/> Is solo parent
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Indigenous</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="aIndigenous" name="is_indigenous" value="1"/> Is indigenous
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aCivil">Civil Status <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="aCivil" name="civil_status">
+              <option value="">None</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Widowed</option>
+              <option>Separated</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="aCitizen">Citizenship <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="aCitizen" name="citizenship">
+              <option value="Filipino">Filipino</option>
+              <option value="Foreigner">Foreigner</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Resident</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       EDIT RESIDENT MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Edit Resident</h2>
+          <p>Update the resident's information below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+      </div>
+
+      <form method="POST" id="editForm" action="">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <label for="eFirstName">First Name</label>
+          <div class="form-field">
+            <input type="text" id="eFirstName" name="first_name" placeholder="First name" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eMiddleName">Middle Name <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="eMiddleName" name="middle_name" placeholder="Middle name"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eLastName">Last Name</label>
+          <div class="form-field">
+            <input type="text" id="eLastName" name="last_name" placeholder="Last name" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eBdate">Birth Date</label>
+          <div class="form-field">
+            <input type="date" id="eBdate" name="birth_date" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eGender">Gender</label>
+          <div class="form-field">
+            <select id="eGender" name="gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eHousehold">Household <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="eHousehold" name="household">
+              <option value="">— None —</option>
+              {% for hh in households %}
+                <option value="{{ hh.id }}">{{ hh.household_id }}{% if hh.head %} — {{ hh.head }}{% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eLivelihood">Livelihood <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="eLivelihood" name="livelihood">
+              <option value="">None</option>
+              <option>Farming</option>
+              <option>Teaching</option>
+              <option>Student</option>
+              <option>Construction</option>
+              <option>Small Business</option>
+              <option>Retail</option>
+              <option>Healthcare</option>
+              <option>Government</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Disability</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eDisability" name="has_disability" value="1"/> Has disability
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eLgbtq">LGBTQ Type <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="eLgbtq" name="lgbtq_type">
+              <option value="">None</option>
+              <option>Gay</option>
+              <option>Lesbian</option>
+              <option>Bisexual</option>
+              <option>Transgender</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Labor Force</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eLabor" name="in_labor_force" value="1"/> Is in labor force
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Unemployed</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eUnemployed" name="is_unemployed" value="1"/> Is unemployed
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>OFW</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eOfw" name="is_ofw" value="1"/> Is OFW
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Solo Parent</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eSolo" name="is_solo_parent" value="1"/> Is solo parent
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Indigenous</label>
+          <div class="form-field">
+            <label class="check-label">
+              <input type="checkbox" id="eIndigenous" name="is_indigenous" value="1"/> Is indigenous
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eCivil">Civil Status <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="eCivil" name="civil_status">
+              <option value="">None</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Widowed</option>
+              <option>Separated</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eCitizen">Citizenship <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <select id="eCitizen" name="citizenship">
+              <option value="Filipino">Filipino</option>
+              <option value="Foreigner">Foreigner</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Resident</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       ADD HOUSEHOLD MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="addHouseholdModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Add New Household</h2>
+          <p>Enter the household details below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('addHouseholdModal')">✕</button>
+      </div>
+      <form method="POST" action="{% url 'household_add' %}">
+        {% csrf_token %}
+        <div class="form-row">
+          <label for="hhNumber">Household Number</label>
+          <div class="form-field">
+            <input type="text" id="hhNumber" name="household_id" placeholder="e.g., HH-001" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="hhHead">Household Head <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="hhHead" name="head" placeholder="Full name of household head"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="hhAddress">Address <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="hhAddress" name="address" placeholder="Street / Sitio / Purok"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="hhOwnership">Ownership Type</label>
+          <div class="form-field">
+            <select id="hhOwnership" name="ownership">
+              <option value="">— Select —</option>
+              <option value="Owned">Owned</option>
+              <option value="Rented">Rented</option>
+              <option value="Shared">Shared</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="hhMaterial">House Material</label>
+          <div class="form-field">
+            <select id="hhMaterial" name="house_material">
+              <option value="">— Select —</option>
+              <option value="Concrete">Concrete</option>
+              <option value="Semi-Concrete">Semi-Concrete</option>
+              <option value="Wood">Wood</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Light Materials">Light Materials</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('addHouseholdModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Household</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================================================
+       EDIT HOUSEHOLD MODAL
+       ================================================ -->
+  <div class="modal-overlay" id="editHouseholdModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h2>Edit Household</h2>
+          <p>Update the household details below.</p>
+        </div>
+        <button class="modal-close" onclick="closeModal('editHouseholdModal')">✕</button>
+      </div>
+      <form method="POST" id="editHouseholdForm" action="">
+        {% csrf_token %}
+        <div class="form-row">
+          <label>Household Number</label>
+          <div class="form-field">
+            <input type="text" id="eHhNumber" disabled
+                   style="background:#f0f7fa; color:#7a9aaa;"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eHhHead">Household Head <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="eHhHead" name="head" placeholder="Full name of household head"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eHhAddress">Address <span class="opt">(Optional)</span></label>
+          <div class="form-field">
+            <input type="text" id="eHhAddress" name="address" placeholder="Street / Sitio / Purok"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eHhOwnership">Ownership Type</label>
+          <div class="form-field">
+            <select id="eHhOwnership" name="ownership">
+              <option value="">— Select —</option>
+              <option value="Owned">Owned</option>
+              <option value="Rented">Rented</option>
+              <option value="Shared">Shared</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="eHhMaterial">House Material</label>
+          <div class="form-field">
+            <select id="eHhMaterial" name="house_material">
+              <option value="">— Select —</option>
+              <option value="Concrete">Concrete</option>
+              <option value="Semi-Concrete">Semi-Concrete</option>
+              <option value="Wood">Wood</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Light Materials">Light Materials</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('editHouseholdModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+
+    /* ---- Open / close modal ---- */
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* Close on overlay click */
+    document.querySelectorAll('.modal-overlay').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target === el) el.classList.remove('open');
+      });
+    });
+
+    /* ---- Open edit modal and populate all fields ---- */
+    function openEdit(id, firstName, middleName, lastName, birthDate, gender, livelihood,
+                      hasDisability, lgbtqType, inLaborForce, isUnemployed,
+                      isOfw, isSoloParent, isIndigenous, civilStatus, citizenship,
+                      householdId) {
+
+      /* Set form action using the resident's ID */
+      document.getElementById('editForm').action = "{% url 'resident_edit' 0 %}".replace('/0/', '/' + id + '/');
+
+      /* Text / date inputs */
+      document.getElementById('eFirstName').value  = firstName;
+      document.getElementById('eMiddleName').value = middleName;
+      document.getElementById('eLastName').value   = lastName;
+      document.getElementById('eBdate').value      = birthDate;
+
+      /* Selects */
+      setSelect('eGender',     gender);
+      setSelect('eLivelihood', livelihood);
+      setSelect('eLgbtq',      lgbtqType);
+      setSelect('eCivil',      civilStatus);
+      setSelect('eCitizen',    citizenship);
+      setSelect('eHousehold',  householdId);
+
+      /* Checkboxes */
+      document.getElementById('eDisability').checked = hasDisability;
+      document.getElementById('eLabor').checked      = inLaborForce;
+      document.getElementById('eUnemployed').checked = isUnemployed;
+      document.getElementById('eOfw').checked        = isOfw;
+      document.getElementById('eSolo').checked       = isSoloParent;
+      document.getElementById('eIndigenous').checked = isIndigenous;
+
+      openModal('editModal');
+    }
+
+    function setSelect(id, val) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      for (var i = 0; i < el.options.length; i++) {
+        if (el.options[i].value === val || el.options[i].text === val) {
+          el.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    /* ---- Import form: disable button on submit to prevent double-upload ---- */
+    const importForm = document.getElementById('importForm');
+    if (importForm) {
+      importForm.addEventListener('submit', function() {
+        const btn = document.getElementById('importBtn');
+        btn.disabled = true;
+        btn.textContent = 'Uploading…';
+      });
+    }
+
+    /* ---- Toggle household members row ---- */
+    function toggleMembers(rowId) {
+      const row   = document.getElementById(rowId);
+      const hhId  = rowId.replace('hh-', '');
+      const arrow = document.getElementById('hh-arrow-' + hhId);
+      if (!row) return;
+      const isOpen = row.style.display !== 'none';
+      row.style.display = isOpen ? 'none' : 'table-row';
+      if (arrow) arrow.textContent = isOpen ? '▶' : '▼';
+    }
+
+    /* ---- Open edit household modal ---- */
+    function openHouseholdEdit(id, hhNumber, head, address, ownership, material) {
+      document.getElementById('editHouseholdForm').action =
+        "{% url 'household_edit' 0 %}".replace('/0/', '/' + id + '/');
+      document.getElementById('eHhNumber').value   = hhNumber;
+      document.getElementById('eHhHead').value     = head;
+      document.getElementById('eHhAddress').value  = address;
+      setSelect('eHhOwnership', ownership);
+      setSelect('eHhMaterial',  material);
+      openModal('editHouseholdModal');
+    }
+
+    /* ---- Live client-side search filter (supplements server-side search) ---- */
+    const searchInput = document.querySelector('.search-bar input[name="q"]');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#residentTable tbody tr').forEach(function(row) {
+          row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+    }
+
+  </script>
+
+</body>
+</html>

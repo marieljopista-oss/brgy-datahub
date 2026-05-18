@@ -1,0 +1,400 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barangay DataHub - Facilities</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="{% url 'dashboard' %}" class="btn-back">&#8592;</a>
+      <span class="topbar-badge">FACILITIES</span>
+    </div>
+    <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-text">
+      <h1>Facilities and Infrastructure</h1>
+      <p>Add, review, and keep every infrastructure update visible right away.</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }} show" style="margin-bottom:12px;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">&#127806;</div>
+        <div class="stat-label">Land and Water</div>
+        <div class="stat-number">{{ land_water_total }}</div>
+        <div class="stat-sub">{{ land_bodies|length }} land records | {{ water_bodies|length }} water records</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127959;</div>
+        <div class="stat-label">Buildings</div>
+        <div class="stat-number">{{ buildings|length }}</div>
+        <div class="stat-sub">Operational and tracked buildings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#127967;</div>
+        <div class="stat-label">Facilities</div>
+        <div class="stat-number">{{ facilities|length }}</div>
+        <div class="stat-sub">Community and service facilities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">&#128739;</div>
+        <div class="stat-label">Road Network</div>
+        <div class="stat-number">{{ roads|length }}</div>
+        <div class="stat-sub">Tracked road segments</div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('landwater',this,'fac')">Land and Water</button>
+      <button class="tab-btn" onclick="switchTab('utilities',this,'fac')">Utilities</button>
+      <button class="tab-btn" onclick="switchTab('buildings',this,'fac')">Buildings</button>
+      <button class="tab-btn" onclick="switchTab('facilities',this,'fac')">Facilities</button>
+      <button class="tab-btn" onclick="switchTab('roads',this,'fac')">Road Network</button>
+    </div>
+
+    <div id="tab-landwater" class="tab-panel active" data-group="fac">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Add Land Record</div>
+          <div class="card-subtitle">Save each land area and see it listed below after submit.</div>
+          <form method="POST" action="{% url 'facility_add' 'land' %}" class="inline-form">
+            {% csrf_token %}
+            <div class="inline-form-group">
+              <label>Land Name</label>
+              <input type="text" name="name" placeholder="e.g., Rice Field Area" required/>
+            </div>
+            <div class="inline-form-group">
+              <label>Type</label>
+              <select name="land_type">
+                <option>Agricultural</option>
+                <option>Residential</option>
+                <option>Forest</option>
+                <option>Commercial</option>
+                <option>Industrial</option>
+              </select>
+            </div>
+            <div class="inline-form-group">
+              <label>Area (hectares)</label>
+              <input type="number" step="0.01" min="0" name="area_ha" placeholder="0.00"/>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Add Land</button>
+          </form>
+
+          {% if land_bodies %}
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Area</th><th class="text-right">Actions</th></tr></thead>
+                <tbody>
+                  {% for item in land_bodies %}
+                    <tr>
+                      <td class="fw-700">{{ item.name }}</td>
+                      <td>{{ item.land_type }}</td>
+                      <td>{% if item.area_ha %}{{ item.area_ha }} hectares{% else %}<span class="na">N/A</span>{% endif %}</td>
+                      <td>
+                        <form method="POST" action="{% url 'facility_delete' 'land' item.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="icon-btn icon-delete">Delete</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="empty-state"><div class="empty-title">No land records yet</div><div class="empty-sub">New land records will appear here after each update.</div></div>
+          {% endif %}
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add Water Record</div>
+          <div class="card-subtitle">Keep all water sources visible in one live list.</div>
+          <form method="POST" action="{% url 'facility_add' 'water' %}" class="inline-form">
+            {% csrf_token %}
+            <div class="inline-form-group">
+              <label>Water Body Name</label>
+              <input type="text" name="name" placeholder="e.g., Cogon River" required/>
+            </div>
+            <div class="inline-form-group">
+              <label>Type</label>
+              <select name="water_type">
+                <option>River</option>
+                <option>Creek</option>
+                <option>Lake</option>
+                <option>Spring</option>
+                <option>Dam</option>
+              </select>
+            </div>
+            <div class="inline-form-group">
+              <label>Description</label>
+              <input type="text" name="description" placeholder="Brief description"/>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Add Water</button>
+          </form>
+
+          {% if water_bodies %}
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Name</th><th>Type</th><th>Description</th><th class="text-right">Actions</th></tr></thead>
+                <tbody>
+                  {% for item in water_bodies %}
+                    <tr>
+                      <td class="fw-700">{{ item.name }}</td>
+                      <td>{{ item.water_type }}</td>
+                      <td>{% if item.description %}{{ item.description }}{% else %}<span class="na">N/A</span>{% endif %}</td>
+                      <td>
+                        <form method="POST" action="{% url 'facility_delete' 'water' item.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="icon-btn icon-delete">Delete</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="empty-state"><div class="empty-title">No water records yet</div><div class="empty-sub">New water records will appear here after each update.</div></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-utilities" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Utility Settings</div>
+        <div class="card-subtitle">Save utility status and instantly keep the latest values visible.</div>
+        <form method="POST" action="{% url 'facility_add' 'utility' %}">
+          {% csrf_token %}
+          <div class="two-col">
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Electricity</label>
+              <select name="electricity">
+                <option value="Available" {% if not utility or utility.electricity == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.electricity == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Water Supply</label>
+              <select name="water_supply">
+                <option value="Available" {% if not utility or utility.water_supply == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.water_supply == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Waste Management</label>
+              <select name="waste_management">
+                <option value="Available" {% if not utility or utility.waste_management == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Not Available" {% if utility and utility.waste_management == 'Not Available' %}selected{% endif %}>Not Available</option>
+              </select>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Toilet Count</label>
+              <input type="number" min="0" name="toilet_count" value="{% if utility %}{{ utility.toilet_count }}{% else %}0{% endif %}"/>
+            </div>
+            <div class="card" style="border:1px solid var(--border-soft);">
+              <label>Bath Count</label>
+              <input type="number" min="0" name="bath_count" value="{% if utility %}{{ utility.bath_count }}{% else %}0{% endif %}"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Save Utility Output</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="tab-buildings" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Add Building</div>
+        <div class="card-subtitle">Every new building is listed below as part of the live infrastructure output.</div>
+        <form method="POST" action="{% url 'facility_add' 'building' %}" class="inline-form">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Building Name</label>
+            <input type="text" name="name" placeholder="e.g., Barangay Health Center" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Type</label>
+            <select name="building_type">
+              <option>Health Facility</option>
+              <option>Educational</option>
+              <option>Emergency</option>
+              <option>Government</option>
+              <option>Religious</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Status</label>
+            <select name="status">
+              <option>Operational</option>
+              <option>Under Repair</option>
+              <option>Closed</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Building</button>
+        </form>
+
+        {% if buildings %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in buildings %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.building_type }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'building' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No building records yet</div><div class="empty-sub">Saved buildings will be displayed here automatically.</div></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="tab-facilities" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Add Facility</div>
+        <div class="card-subtitle">Each submit updates the facility output table right below.</div>
+        <form method="POST" action="{% url 'facility_add' 'facility' %}" class="inline-form">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Facility Name</label>
+            <input type="text" name="name" placeholder="e.g., Multi-Purpose Hall" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Type</label>
+            <select name="facility_type">
+              <option>Community</option>
+              <option>Security</option>
+              <option>Transport</option>
+              <option>Health</option>
+              <option>Education</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Quantity</label>
+            <input type="number" min="1" name="quantity" value="1"/>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Facility</button>
+        </form>
+
+        {% if facilities %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Type</th><th>Quantity</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in facilities %}
+                  <tr>
+                    <td class="fw-700">{{ item.name }}</td>
+                    <td>{{ item.facility_type }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'facility' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No facility records yet</div><div class="empty-sub">Saved facilities will be displayed here automatically.</div></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div id="tab-roads" class="tab-panel" data-group="fac">
+      <div class="card">
+        <div class="card-title">Add Road Segment</div>
+        <div class="card-subtitle">Road updates feed directly into the live infrastructure output.</div>
+        <form method="POST" action="{% url 'facility_add' 'road' %}" class="inline-form">
+          {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Road Type</label>
+            <select name="road_type">
+              <option>Concrete</option>
+              <option>Gravel</option>
+              <option>Asphalt</option>
+              <option>Dirt Road</option>
+            </select>
+          </div>
+          <div class="inline-form-group">
+            <label>Length (km)</label>
+            <input type="number" step="0.01" min="0" name="length_km" placeholder="0.00" required/>
+          </div>
+          <div class="inline-form-group">
+            <label>Status</label>
+            <select name="status">
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Poor</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add Road</button>
+        </form>
+
+        {% if roads %}
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Road Type</th><th>Length</th><th>Status</th><th class="text-right">Actions</th></tr></thead>
+              <tbody>
+                {% for item in roads %}
+                  <tr>
+                    <td class="fw-700">{{ item.road_type }}</td>
+                    <td>{{ item.length_km }} km</td>
+                    <td>{{ item.status }}</td>
+                    <td>
+                      <form method="POST" action="{% url 'facility_delete' 'road' item.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn icon-delete">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><div class="empty-title">No road records yet</div><div class="empty-sub">Saved roads will be displayed here automatically.</div></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'css/app.js' %}"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const activeTab = params.get('tab');
+    if (activeTab) {
+      const tabButton = Array.from(document.querySelectorAll('.tab-btn')).find((btn) => btn.getAttribute('onclick').includes("'" + activeTab + "'"));
+      if (tabButton) {
+        switchTab(activeTab, tabButton, 'fac');
+      }
+    }
+  </script>
+</body>
+</html>
