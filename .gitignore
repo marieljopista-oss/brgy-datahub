@@ -1,7 +1,22 @@
+# Virtual environment
+Lib/
+Scripts/
+pyvenv.cfg
+share/
+etc/
+
+# Python
 *.pyc
 __pycache__/
+
+# Environment files
 *.env
 .env
+
+# Django generated
 staticfiles/
 media/
 db.sqlite3
+
+# Logs
+*.log
