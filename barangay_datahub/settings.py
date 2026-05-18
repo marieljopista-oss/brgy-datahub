@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-change-this-in-production-barangay-datahub-2024'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['brgy-datahub.onrender.com', 'localhost']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
