@@ -135,6 +135,16 @@
         <form method="POST" action="{% url 'institution_add' 'medical' %}" class="inline-form">
           {% csrf_token %}
           <div class="inline-form-group">
+            <div class="inline-form-group">
+              <label>Link to Resident (Optional)</label>
+              <select name="resident">
+                <option value="">-- Select Resident --</option>
+                {% for r in residents %}
+                  <option value="{{ r.id }}">{{ r.full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="inline-form-group">
             <label>Full Name</label>
             <input type="text" name="full_name" placeholder="Full name" required/>
           </div>
@@ -188,6 +198,15 @@
         <div class="card-subtitle">Professional output updates immediately after each save.</div>
         <form method="POST" action="{% url 'institution_add' 'professional' %}" class="inline-form">
           {% csrf_token %}
+          <div class="inline-form-group">
+            <label>Link to Resident (Optional)</label>
+            <select name="resident">
+              <option value="">-- Select Resident --</option>
+              {% for r in residents %}
+                <option value="{{ r.id }}">{{ r.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
           <div class="inline-form-group">
             <label>Full Name</label>
             <input type="text" name="full_name" placeholder="Full name" required/>

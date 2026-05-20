@@ -254,20 +254,6 @@ class RoadNetwork(models.Model):
 #  INSTITUTIONS
 # ─────────────────────────────────────────
 
-class Institution(models.Model):
-    name  = models.CharField(max_length=100)
-    president  = models.CharField(max_length=100, blank=True)
-    members  = models.PositiveIntegerField(default=0)
-    status  = models.CharField(max_length=10,
-                                  choices=[('Active','Active'),('Inactive','Inactive')],
-                                  default='Active')
-    programs  = models.CharField(max_length=200, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-
 class MedicalStaff(models.Model):
     POSITION_CHOICES = [
         ('Doctor', 'Doctor'),
@@ -276,9 +262,12 @@ class MedicalStaff(models.Model):
         ('Midwife', 'Midwife'),
         ('Dentist', 'Dentist'),
     ]
+    resident   = models.ForeignKey('Resident', on_delete=models.SET_NULL,   # ← ADD
+                                    null=True, blank=True,                   # ← ADD
+                                    related_name='medical_staff')            # ← ADD
     name       = models.CharField(max_length=100)
-    position  = models.CharField(max_length=20, choices= POSITION_CHOICES)
-    contact  = models.CharField(max_length=20, blank=True)
+    position   = models.CharField(max_length=20, choices=POSITION_CHOICES)
+    contact    = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -295,10 +284,13 @@ class Professional(models.Model):
         ('Mechanic', 'Mechanic'),
         ('Farmer', 'Farmer'),
     ]
-    name      = models.CharField(max_length=100)
+    resident   = models.ForeignKey('Resident', on_delete=models.SET_NULL,   # ← ADD
+                                    null=True, blank=True,                   # ← ADD
+                                    related_name='professionals')            # ← ADD
+    name       = models.CharField(max_length=100)
     profession = models.CharField(max_length=20, choices=PROFESSION_CHOICES)
-    contact = models.CharField(max_length=20, blank=True)
+    contact    = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name}({self.profession})"
+        return f"{self.name} ({self.profession})"
