@@ -293,4 +293,4 @@ class Professional(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} ({self.profession})"
+        return self.resident.full_name if self.resident else "No Resident Linked"
