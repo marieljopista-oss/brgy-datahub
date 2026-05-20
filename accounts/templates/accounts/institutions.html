@@ -10,7 +10,7 @@
 <body>
   <div class="topbar">
     <div class="topbar-left">
-      <a href="{% url 'dashboard' %}" class="btn-back">&#8592;</a>
+      <a href="{% url 'home' %}" class="btn-back" title="Go back to homepage">&#8592;</a>
       <span class="topbar-badge">INSTITUTIONS</span>
     </div>
     <a href="{% url 'profile' %}" class="user-avatar">&#128100;</a>
@@ -135,16 +135,15 @@
         <form method="POST" action="{% url 'institution_add' 'medical' %}" class="inline-form">
           {% csrf_token %}
           <div class="inline-form-group">
-            <div class="inline-form-group">
-              <label>Link to Resident (Optional)</label>
-              <select name="resident">
-                <option value="">-- Select Resident --</option>
-                {% for r in residents %}
-                  <option value="{{ r.id }}">{{ r.full_name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="inline-form-group">
+            <label>Link to Resident (Optional)</label>
+            <select name="resident">
+              <option value="">-- Select Resident --</option>
+              {% for r in residents %}
+                <option value="{{ r.id }}">{{ r.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="inline-form-group">
             <label>Full Name</label>
             <input type="text" name="full_name" placeholder="Full name" required/>
           </div>

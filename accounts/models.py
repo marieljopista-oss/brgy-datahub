@@ -254,6 +254,22 @@ class RoadNetwork(models.Model):
 #  INSTITUTIONS
 # ─────────────────────────────────────────
 
+class Institution(models.Model):
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Inactive', 'Inactive'),
+    ]
+    name = models.CharField(max_length=150)
+    president = models.CharField(max_length=100, blank=True)
+    members = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
+    programs = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
 class MedicalStaff(models.Model):
     POSITION_CHOICES = [
         ('Doctor', 'Doctor'),

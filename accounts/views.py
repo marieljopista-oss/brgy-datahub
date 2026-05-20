@@ -16,6 +16,7 @@ from .models import (
     Building,
     Facility,
     Household,
+    Institution,
     LandBody,
     MedicalStaff,
     Professional,
