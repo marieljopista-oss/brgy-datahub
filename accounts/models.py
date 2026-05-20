@@ -271,7 +271,7 @@ class MedicalStaff(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+         return self.resident.full_name if self.resident else "No Resident Linked"
 
 
 class Professional(models.Model):
